@@ -1,3 +1,0 @@
-let @name "sty";
-let @age 18;
-print (+ "hello! My name is " name " and I'm " (str age) " years old.");
