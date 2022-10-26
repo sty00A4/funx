@@ -10,7 +10,7 @@ static SYMBOL: [&str; 13] = ["(", ")", "{", "}", "<", ">", "[", "]", "@", "#", "
 pub enum T {
     NO,
     EvalIn, EvalOut, BodyIn, BodyOut, PattIn, PattOut, VecIn, VecOut, Addr, Closure, End,
-    Null, Wirldcard, Word(String), Number(Number), Bool(bool), String(String),
+    Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String),
 }
 impl T {
     pub fn name(&self) -> &str {
@@ -30,7 +30,8 @@ impl T {
             Self::Null => "'null'",
             Self::Wirldcard => "'_'",
             Self::Word(_) => "word",
-            Self::Number(_) => "number",
+            Self::Int(_) => "int",
+            Self::Float(_) => "float",
             Self::Bool(_) => "boolean",
             Self::String(_) => "string",
         }
@@ -96,13 +97,13 @@ impl Lexer {
             }
             if dot {
                 return Ok(Some(
-                    Token(T::Number(Number::Float(number.parse::<f64>().unwrap())),
+                    Token(T::Float(number.parse::<f64>().unwrap()),
                     Position::new(ln_start..self.ln, col_start..self.col))
                 ))
             }
             return Ok(Some(
                 Token(
-                    T::Number(Number::Int(number.parse::<i64>().unwrap())),
+                    T::Int(number.parse::<i64>().unwrap()),
                     Position::new(ln_start..self.ln, col_start..self.col)
                 )
             ))

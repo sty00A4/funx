@@ -6,7 +6,7 @@ use crate::lexer::*;
 #[derive(Clone, PartialEq)]
 pub enum N {
     Eval(Vec<Node>), Body(Vec<Node>), Pattern(Vec<Node>), Vector(Vec<Node>), Addr(Box<Node>), Closure(Box<Node>),
-    Null, Wirldcard, Word(String), Number(Number), Bool(bool), String(String),
+    Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String),
 }
 impl std::fmt::Debug for N {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -20,7 +20,8 @@ impl std::fmt::Debug for N {
             Self::Null => write!(f, "null"),
             Self::Wirldcard => write!(f, "_"),
             Self::Word(v) => write!(f, "{v}"),
-            Self::Number(v) => write!(f, "{v}"),
+            Self::Int(v) => write!(f, "{v}"),
+            Self::Float(v) => write!(f, "{v}"),
             Self::Bool(v) => write!(f, "{v}"),
             Self::String(v) => write!(f, "{v:?}"),
         }
@@ -147,8 +148,13 @@ impl Parser {
             let pos = node.1.clone();
             return Ok(Node(N::Closure(Box::new(node)), Position::new(start.0.start..pos.0.end, start.1.start..pos.1.end)))
         }
-        if let Token(T::Number(v), pos) = self.token_pos() {
-            let node = Ok(Node(N::Number(v.clone()), pos.clone()));
+        if let Token(T::Int(v), pos) = self.token_pos() {
+            let node = Ok(Node(N::Int(v.clone()), pos.clone()));
+            self.advance();
+            return node
+        }
+        if let Token(T::Float(v), pos) = self.token_pos() {
+            let node = Ok(Node(N::Float(v.clone()), pos.clone()));
             self.advance();
             return node
         }

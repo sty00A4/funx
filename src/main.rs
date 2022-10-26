@@ -28,13 +28,19 @@ fn main () {
             if res.is_err() { println!("{}", res.err().unwrap()); return }
             let tokens = res.unwrap();
             println!("{tokens:?}");
+            if tokens.len() == 0 { return }
             
-            if tokens.len() > 0 {
-                let res = parser::parse(&path, &tokens);
-                if res.is_err() { println!("{}", res.err().unwrap()); return }
-                let node = res.unwrap();
-                println!("{node}");
-            }
+            let res = parser::parse(&path, &tokens);
+            if res.is_err() { println!("{}", res.err().unwrap()); return }
+            let node = res.unwrap();
+            println!("{node}");
+
+            let mut context = Context::new();
+
+            let res = evaluator::get(&node, &path, &mut context);
+            if res.is_err() { println!("{}", res.err().unwrap()); return }
+            let (value, ret) = res.unwrap();
+            println!("{value}");
         }
     }
 }
