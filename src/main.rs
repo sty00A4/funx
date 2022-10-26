@@ -27,13 +27,13 @@ fn main () {
             let res = lexer::lex(&path, &text);
             if res.is_err() { println!("{}", res.err().unwrap()); return }
             let tokens = res.unwrap();
-            println!("{tokens:?}");
+            // println!("{tokens:?}");
             if tokens.len() == 0 { return }
             
             let res = parser::parse(&path, &tokens);
             if res.is_err() { println!("{}", res.err().unwrap()); return }
             let node = res.unwrap();
-            println!("{node}");
+            // println!("{node}");
 
             let mut context = Context::new();
 

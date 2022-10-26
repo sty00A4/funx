@@ -34,6 +34,9 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
         N::Bool(v) => Ok((V::Bool(*v), R::None)),
         N::String(v) => Ok((V::String(v.clone()), R::None)),
         N::Addr(n) => {
+            if let N::Word(addr) = &n.0 {
+                return Ok((V::Addr(addr.clone()), R::None))
+            }
             let (value, _) = get(n, path, context)?;
             if let V::String(addr) = value {
                 return Ok((V::Addr(addr), R::None))

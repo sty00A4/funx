@@ -21,7 +21,7 @@ impl std::fmt::Display for E {
             Self::Char{ char, pos } => write!(f, "ERROR: bad character {char:?}"),
             Self::UnexpectedToken{ token, pos } => write!(f, "ERROR: unexpected {}", token.name()),
             Self::HeadOperation{ value, pos } => write!(f, "ERROR: unexpected {} as head operation", value.typ()),
-            Self::ExpectedType{ typ, recv_typ, pos } => write!(f, "ERROR: unexpected {typ} but got {recv_typ}"),
+            Self::ExpectedType{ typ, recv_typ, pos } => write!(f, "ERROR: expected {typ} but got {recv_typ}"),
         }
     }
 }
