@@ -16,10 +16,13 @@ impl Scope {
 pub struct Context {
     scopes: Vec<Scope>,
     global: Scope,
-    trace: Vec<(String, E, Position)>
+    trace: Vec<Position>
 }
 impl Context {
     pub fn new() -> Self { Self { scopes: vec![], global: Scope::new(), trace: vec![] } }
+    pub fn trace(&mut self, pos: &Position) {
+        self.trace.push(pos.clone())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -41,7 +44,8 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             if let V::String(addr) = value {
                 return Ok((V::Addr(addr), R::None))
             }
-            return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ(), pos: node.1.clone() })
+            context.trace(&node.1);
+            return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
         },
         N::Closure(n) => Ok((V::Closure(n.as_ref().clone()), R::None)),
         N::Word(word) => {
@@ -59,7 +63,10 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             let (head_value, _) = get(head, path, context)?;
             match head_value {
                 V::NativFunction(f) => f(args),
-                _ => Err(E::HeadOperation { value: head_value, pos: head.1.clone() })
+                _ => {
+                    context.trace(&node.1);
+                    Err(E::HeadOperation(head_value))
+                }
             }
         }
         N::Body(nodes) => {

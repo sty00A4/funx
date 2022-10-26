@@ -2,6 +2,7 @@ use crate::position::*;
 use crate::error::*;
 use crate::values::*;
 use crate::lexer::*;
+use crate::evaluator::*;
 
 #[derive(Clone, PartialEq)]
 pub enum N {
@@ -64,14 +65,14 @@ impl Parser {
         if self.idx >= self.tokens.len() { return &self.tokens.last().unwrap().1 }
         &self.tokens[self.idx].1
     }
-    pub fn parse(&mut self) -> Result<Node, E> {
+    pub fn parse(&mut self, context: &mut Context) -> Result<Node, E> {
         let start = self.pos().clone();
         let mut body_nodes: Vec<Node> = vec![];
         while self.token() != &T::NO {
             let start_node = self.pos().clone();
             let mut nodes: Vec<Node> = vec![];
             while self.token() != &T::End && self.token() != &T::NO {
-                let node = self.next()?;
+                let node = self.next(context)?;
                 nodes.push(node);
             }
             if self.token() == &T::End { self.advance(); }
@@ -85,13 +86,13 @@ impl Parser {
         }
         return Ok(Node(N::Body(body_nodes), Position::new(start.0.start..self.pos().0.end, start.1.start..self.pos().1.end)))
     }
-    pub fn next(&mut self) -> Result<Node, E> {
+    pub fn next(&mut self, context: &mut Context) -> Result<Node, E> {
         let start = self.pos().clone();
         if self.token() == &T::EvalIn {
             self.advance();
             let mut nodes: Vec<Node> = vec![];
             while self.token() != &T::EvalOut {
-                let node = self.next()?;
+                let node = self.next(context)?;
                 nodes.push(node);
             }
             self.advance();
@@ -104,7 +105,7 @@ impl Parser {
                 let start_node = self.pos().clone();
                 let mut nodes: Vec<Node> = vec![];
                 while self.token() != &T::End && self.token() != &T::BodyOut {
-                    let node = self.next()?;
+                    let node = self.next(context)?;
                     nodes.push(node);
                 }
                 if self.token() == &T::End { self.advance(); }
@@ -120,7 +121,7 @@ impl Parser {
             self.advance();
             let mut nodes: Vec<Node> = vec![];
             while self.token() != &T::PattOut {
-                let node = self.next()?;
+                let node = self.next(context)?;
                 nodes.push(node);
             }
             self.advance();
@@ -130,7 +131,7 @@ impl Parser {
             self.advance();
             let mut nodes: Vec<Node> = vec![];
             while self.token() != &T::VecOut {
-                let node = self.next()?;
+                let node = self.next(context)?;
                 nodes.push(node);
             }
             self.advance();
@@ -138,13 +139,13 @@ impl Parser {
         }
         if self.token() == &T::Addr {
             self.advance();
-            let node = self.next()?;
+            let node = self.next(context)?;
             let pos = node.1.clone();
             return Ok(Node(N::Addr(Box::new(node)), Position::new(start.0.start..pos.0.end, start.1.start..pos.1.end)))
         }
         if self.token() == &T::Closure {
             self.advance();
-            let node = self.next()?;
+            let node = self.next(context)?;
             let pos = node.1.clone();
             return Ok(Node(N::Closure(Box::new(node)), Position::new(start.0.start..pos.0.end, start.1.start..pos.1.end)))
         }
@@ -183,11 +184,12 @@ impl Parser {
             self.advance();
             return node
         }
-        Err(E::UnexpectedToken { token: self.token().clone(), pos: self.pos().clone() })
+        context.trace(self.pos());
+        Err(E::UnexpectedToken(self.token().clone()))
     }
 }
 
-pub fn parse(path: &String, tokens: &Vec<Token>) -> Result<Node, E> {
+pub fn parse(path: &String, tokens: &Vec<Token>, context: &mut Context) -> Result<Node, E> {
     let mut parser = Parser::new(tokens);
-    parser.parse()
+    parser.parse(context)
 }

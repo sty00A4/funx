@@ -23,22 +23,22 @@ fn main () {
         Some(path) => {
             let res = fs::read_to_string(&path); if res.is_err() { println!("could not open {path}"); return; }
             let text = res.unwrap();
+            let mut context = Context::new();
 
-            let res = lexer::lex(&path, &text);
-            if res.is_err() { println!("{}", res.err().unwrap()); return }
+            let res = lexer::lex(&path, &text, &mut context);
+            if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
             let tokens = res.unwrap();
             // println!("{tokens:?}");
             if tokens.len() == 0 { return }
             
-            let res = parser::parse(&path, &tokens);
-            if res.is_err() { println!("{}", res.err().unwrap()); return }
+            let res = parser::parse(&path, &tokens, &mut context);
+            if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
             let node = res.unwrap();
             // println!("{node}");
 
-            let mut context = Context::new();
 
             let res = evaluator::get(&node, &path, &mut context);
-            if res.is_err() { println!("{}", res.err().unwrap()); return }
+            if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
             let (value, ret) = res.unwrap();
             println!("{value}");
         }
