@@ -170,6 +170,32 @@ pub fn _sub(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     }
     Ok((sum, R::None))
 }
+pub fn _mul(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    let mut sum = args[0].clone();
+    for i in 1..args.len() {
+        let v = sum.mul(&args[i]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
+        }
+        sum = v.unwrap();
+    }
+    Ok((sum, R::None))
+}
+pub fn _div(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    let mut sum = args[0].clone();
+    for i in 1..args.len() {
+        let v = sum.div(&args[i]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
+        }
+        sum = v.unwrap();
+    }
+    Ok((sum, R::None))
+}
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
@@ -187,5 +213,9 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(vec![], _add));
     let _ = context.def(&"-".to_string(),
     &V::NativFunction(vec![], _sub));
+    let _ = context.def(&"*".to_string(),
+    &V::NativFunction(vec![], _mul));
+    let _ = context.def(&"/".to_string(),
+    &V::NativFunction(vec![], _div));
     context
 }

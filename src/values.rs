@@ -181,7 +181,7 @@ impl V {
     pub fn div(&self, other: &V) -> Option<V> {
         match self {
             Self::Int(v1) => match other {
-                Self::Int(v2) => Some(V::Int(v1 / v2)),
+                Self::Int(v2) => Some(V::Float((*v1 as f64) / (*v2 as f64))),
                 Self::Float(v2) => Some(V::Float((*v1 as f64) / v2)),
                 _ => None
             }
