@@ -1,1 +1,1 @@
-print (union float int)
+print (= (exclude bool) (union int float))

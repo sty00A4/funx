@@ -218,6 +218,19 @@ pub fn _union(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Po
     }
     return Ok((V::Type(Type::Union(types)), R::None))
 }
+pub fn _exclude(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Type(Type::Union(vec![Type::Any])), R::None)) }
+    let mut types: Vec<Type> = vec![];
+    for i in 0..args.len() {
+        if let V::Type(typ) = &args[i] {
+            types.push(typ.clone());
+        } else {
+            context.trace(&poses[i]);
+            return Err(E::ExpectedType { typ: Type::Type, recv_typ: args[i].typ() })
+        }
+    }
+    return Ok((V::Type(Type::Exclude(types)), R::None))
+}
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
@@ -248,5 +261,8 @@ pub fn funx_context(path: &String) -> Context {
     
     let _ = context.def(&"union".to_string(),
     &V::NativFunction(Box::new(V::Null), _union));
+    let _ = context.def(&"exclude".to_string(),
+    &V::NativFunction(Box::new(V::Null), _exclude));
+
     context
 }
