@@ -1,5 +1,6 @@
 use crate::position::*;
 use crate::error::*;
+use crate::runfile;
 use crate::values::*;
 use crate::evaluator::*;
 
@@ -231,6 +232,14 @@ pub fn _exclude(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&
     }
     return Ok((V::Type(Type::Exclude(types)), R::None))
 }
+pub fn _load(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    if let V::String(path) = &args[0] {
+        runfile(path, context)?;
+        return Ok((V::Null, R::None))
+    }
+    Err(E::ExpectedType { typ: Type::String, recv_typ: args[0].typ() })
+}
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
@@ -243,9 +252,6 @@ pub fn funx_context(path: &String) -> Context {
 
     let _ = context.def(&"if".to_string(),
     &V::NativFunction(Box::new(V::Pattern(vec![Type::Bool, Type::Any, Type::Any])), _if));
-
-    let _ = context.def(&"print".to_string(),
-    &V::NativFunction(Box::new(V::Null), _print));
 
     let _ = context.def(&"+".to_string(),
     &V::NativFunction(Box::new(V::Null), _add));
@@ -263,6 +269,11 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(Box::new(V::Null), _union));
     let _ = context.def(&"exclude".to_string(),
     &V::NativFunction(Box::new(V::Null), _exclude));
+    
+    let _ = context.def(&"print".to_string(),
+    &V::NativFunction(Box::new(V::Null), _print));
+    let _ = context.def(&"load".to_string(),
+    &V::NativFunction(Box::new(V::Null), _load));
 
     context
 }

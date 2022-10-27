@@ -8,10 +8,30 @@ mod context;
 mod lexer;
 mod parser;
 mod evaluator;
+use error::*;
+use values::*;
 use context::*;
 use evaluator::*;
 
 use std::{env, fs};
+
+pub fn run(path: &String, text: &String, context: &mut Context) -> Result<(V, R), E> {
+    let tokens = lexer::lex(&text)?;
+    // println!("{tokens:?}");
+    if tokens.len() == 0 { return Ok((V::Null, R::None)) }
+    
+    let node = parser::parse(&tokens, context)?;
+    // println!("{node}");
+
+    evaluator::get(&node, context)
+}
+pub fn runfile(path: &String, context: &mut Context) -> Result<(V, R), E> {
+    let res = fs::read_to_string(path);
+    if res.is_err() { return Err(E::FileNotFound(path.clone())) }
+    let text = res.unwrap();
+
+    run(path, &text, context)
+}
 
 fn main () {
     let mut args = env::args();
@@ -20,26 +40,9 @@ fn main () {
     match input_path {
         None => {},
         Some(path) => {
-            let res = fs::read_to_string(&path); if res.is_err() { println!("could not open {path}"); return; }
-            let text = res.unwrap();
             let mut context = funx_context(&path);
-
-            let res = lexer::lex(&text);
+            let res = runfile(&path, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
-            let tokens = res.unwrap();
-            // println!("{tokens:?}");
-            if tokens.len() == 0 { return }
-            
-            let res = parser::parse(&tokens, &mut context);
-            if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
-            let node = res.unwrap();
-            // println!("{node}");
-
-
-            let res = evaluator::get(&node, &mut context);
-            if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
-            let (value, ret) = res.unwrap();
-            if ret != R::None { println!("{value}"); }
         }
     }
 }
