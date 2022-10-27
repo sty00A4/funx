@@ -1,2 +1,1 @@
-load "std/core.funx";
-print (not true);
+if true #(print 1);

@@ -78,7 +78,7 @@ impl Context {
 
 pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
-    let value = &args[1];
+    let value = args.get(1).unwrap_or_else(|| &V::Null);
     if let V::Addr(word) = addr {
         let res = context.def(word, value);
         if res.is_err() {
@@ -92,7 +92,7 @@ pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
 }
 pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
-    let value = &args[1];
+    let value = args.get(1).unwrap_or_else(|| &V::Null);
     if let V::Addr(word) = addr {
         let res = context.var(word, value);
         if res.is_err() {
@@ -118,8 +118,8 @@ pub fn _get(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Positi
 }
 pub fn _if(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let cond = &args[0];
-    let case = &args[1];
-    let else_case = &args[2];
+    let case = args.get(1).unwrap_or_else(|| &V::Null);
+    let else_case = args.get(2).unwrap_or_else(|| &V::Null);
     if cond == &V::Bool(true) {
         if let V::Closure(n) = case { return get(n, context) }
         return Ok((case.clone(), R::None))

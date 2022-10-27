@@ -4,20 +4,39 @@ def @number (union int float);
 def @some (exclude undefined);
 def @iter (union str vec);
 
-def @int? (function <any> #(= (type %0) int));
-def @float? (function <any> #(= (type %0) float));
-def @number? (function <any> #(= (type %0) number));
-def @bool? (function <any> #(= (type %0) bool));
-def @str? (function <any> #(= (type %0) str));
-def @vec? (function <any> #(= (type %0) vec));
-def @nativ-function? (function <any> #(= (type %0) nativ-function));
-def @function? (function <any> #(= (type %0) function));
-def @addr? (function <any> #(= (type %0) addr));
-def @closure? (function <any> #(= (type %0) closure));
-def @pattern? (function <any> #(= (type %0) pattern));
-def @type? (function <any> #(= (type %0) type));
+$ type option
+def @int? (union int undefined);
+def @float? (union float undefined);
+def @number? (union number undefined);
+def @bool? (union number undefined);
+def @str? (union str undefined);
+def @vec? (union vec undefined);
+def @iter? (union iter undefined);
+def @nativ-function? (union nativ-function undefined);
+def @function? (union function undefined);
+def @addr? (union addr undefined);
+def @closure? (union closure undefined);
+def @pattern? (union pattern undefined);
+def @type? (union type undefined);
 
-$ more operations
+$ is type
+def @is-null (function <any> #(= (type %0) undefined));
+def @is-some (function <any> #(= (type %0) some));
+def @is-int (function <any> #(= (type %0) int));
+def @is-float (function <any> #(= (type %0) float));
+def @is-number (function <any> #(= (type %0) number));
+def @is-bool (function <any> #(= (type %0) bool));
+def @is-str (function <any> #(= (type %0) str));
+def @is-vec (function <any> #(= (type %0) vec));
+def @is-iter (function <any> #(= (type %0) iter));
+def @is-nativ-function (function <any> #(= (type %0) nativ-function));
+def @is-function (function <any> #(= (type %0) function));
+def @is-addr (function <any> #(= (type %0) addr));
+def @is-closure (function <any> #(= (type %0) closure));
+def @is-pattern (function <any> #(= (type %0) pattern));
+def @is-type (function <any> #(= (type %0) type));
+
+$ logic
 def @not (function <bool> #(%0 false true));
 def @or (function <bool bool> #(%0 true %1));
 def @and (function <bool bool> #(%0 %1 false));

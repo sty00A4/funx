@@ -11,9 +11,11 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
     match head_value {
         V::NativFunction(params, f) => {
             if let V::Pattern(_pattern) = params.as_ref() {
-                if &types != _pattern {
-                    context.trace(&head.1);
-                    return Err(E::PatternMissmatch { pattern1: V::Pattern(types), pattern2: params.as_ref().clone() })
+                for i in 0.._pattern.len() {
+                    if &_pattern[i] != types.get(i).unwrap_or_else(|| &Type::Undefined) {
+                        context.trace(&poses[i]);
+                        return Err(E::ExpectedType { typ: _pattern[i].clone(), recv_typ: types[i].clone() })
+                    }
                 }
             } else if params.as_ref() != &V::Null {
                 context.trace(&head.1);
@@ -53,12 +55,8 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
         }
         V::Function(pattern, value) => {
             if let V::Pattern(patt_types) = pattern.as_ref() {
-                if types.len() < patt_types.len() {
-                    context.trace(&head.1);
-                    return Err(E::ExpectedLen { len: patt_types.len(), recv_len: types.len() })
-                }
                 for i in 0..patt_types.len() {
-                    if patt_types[i] != types[i] {
+                    if &patt_types[i] != types.get(i).unwrap_or_else(|| &Type::Undefined) {
                         context.trace(&poses[i]);
                         return Err(E::ExpectedType { typ: patt_types[i].clone(), recv_typ: types[i].clone() })
                     }
