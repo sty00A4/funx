@@ -1,5 +1,6 @@
 use crate::position::*;
 use crate::error::*;
+use crate::values::*;
 use crate::context::*;
 use crate::lexer::*;
 
@@ -7,7 +8,7 @@ use crate::lexer::*;
 pub enum N {
     Eval(Vec<Node>), Body(Vec<Node>), Pattern(Vec<Node>), Vector(Vec<Node>),
     Addr(Box<Node>), Arg(Box<Node>), Closure(Box<Node>),
-    Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String),
+    Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String), Type(Type)
 }
 impl std::fmt::Debug for N {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -26,6 +27,7 @@ impl std::fmt::Debug for N {
             Self::Float(v) => write!(f, "{v}"),
             Self::Bool(v) => write!(f, "{v}"),
             Self::String(v) => write!(f, "{v:?}"),
+            Self::Type(v) => write!(f, "{v}"),
         }
     }
 }
@@ -173,6 +175,11 @@ impl Parser {
         }
         if let Token(T::String(v), pos) = self.token_pos() {
             let node = Ok(Node(N::String(v.clone()), pos.clone()));
+            self.advance();
+            return node
+        }
+        if let Token(T::Type(v), pos) = self.token_pos() {
+            let node = Ok(Node(N::Type(v.clone()), pos.clone()));
             self.advance();
             return node
         }

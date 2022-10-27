@@ -1,11 +1,7 @@
-use std::fmt::format;
 use std::fs;
-use crate::position::*;
 use crate::values::*;
 use crate::context::*;
 use crate::lexer::*;
-use crate::parser::*;
-use crate::evaluator::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum E {

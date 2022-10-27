@@ -1,1 +1,1 @@
-print (/ 0 2)
+print (= <int float> <int float>)

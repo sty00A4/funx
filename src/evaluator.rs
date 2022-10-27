@@ -15,6 +15,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
         N::Float(v) => Ok((V::Float(*v), R::None)),
         N::Bool(v) => Ok((V::Bool(*v), R::None)),
         N::String(v) => Ok((V::String(v.clone()), R::None)),
+        N::Type(v) => Ok((V::Type(v.clone()), R::None)),
         N::Addr(n) => {
             if let N::Word(addr) = &n.0 {
                 return Ok((V::Addr(addr.clone()), R::None))
@@ -37,6 +38,19 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
         }
         N::Closure(n) => Ok((V::Closure(n.as_ref().clone()), R::None)),
+        N::Pattern(nodes) => {
+            let mut types: Vec<Type> = vec![];
+            for n in nodes {
+                let (value, _) = get(&n, context)?;
+                if let V::Type(typ) = value {
+                    types.push(typ);
+                } else {
+                    context.trace(&n.1);
+                    return Err(E::ExpectedType { typ: Type::Type, recv_typ: value.typ() })
+                }
+            }
+            Ok((V::Pattern(types), R::None))
+        }
         N::Word(word) => {
             let v = context.get(word);
             if let Some(value) = v {
@@ -78,6 +92,12 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
                     context.pop();
                     return Ok(value_ret)
                 }
+                V::Type(typ) => {
+                    if args.len() == 0 { return Ok((V::Type(typ), R::None)) }
+                    match typ {
+                        _ => Ok((typ.cast(&args[0]), R::None))
+                    }
+                }
                 _ => {
                     context.trace(&node.1);
                     Err(E::HeadOperation(head_value))
@@ -89,9 +109,6 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
                 let (value, ret) = get(n, context)?;
                 if ret != R::None { return Ok((value, ret)) }
             }
-            Ok((V::Null, R::None))
-        }
-        N::Pattern(nodes) => {
             Ok((V::Null, R::None))
         }
         N::Vector(nodes) => {

@@ -196,6 +196,15 @@ pub fn _div(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Posi
     }
     Ok((sum, R::None))
 }
+pub fn _eq(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() <= 1 { return Ok((V::Bool(false), R::None)) }
+    for i in 0..args.len() {
+        for j in 0..args.len() {
+            if args[i] != args[j] { return Ok((V::Bool(false), R::None)) }
+        }
+    }
+    return Ok((V::Bool(true), R::None))
+}
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
@@ -217,5 +226,7 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(vec![], _mul));
     let _ = context.def(&"/".to_string(),
     &V::NativFunction(vec![], _div));
+    let _ = context.def(&"=".to_string(),
+    &V::NativFunction(vec![], _eq));
     context
 }

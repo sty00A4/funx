@@ -9,7 +9,7 @@ pub type NativFunction = fn(Vec<V>, &mut Context, &Position, &Vec<&Position>) ->
 #[derive(Clone)]
 pub enum Type {
     Undefined, Any, Int, Float, Bool, String, NativFunction, Function,
-    Addr, Closure,
+    Addr, Closure, Pattern,
     Union(Vec<Type>), Type
 }
 impl Type {
@@ -63,6 +63,7 @@ impl std::fmt::Debug for Type {
             Self::Function => write!(f, "function"),
             Self::Addr => write!(f, "addr"),
             Self::Closure => write!(f, "closure"),
+            Self::Pattern => write!(f, "pattern"),
             Self::Union(types) => write!(f, "{}", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
             Self::Type => write!(f, "type"),
         }
@@ -74,19 +75,13 @@ impl PartialEq for Type {
         if let Self::Any = other { return true }
         if let Self::Union(types) = self {
             if let Self::Union(other_types) = other {
-                for typ in types {
-                    if !other_types.contains(typ) { return false }
-                }
-                return true
+                return types == other_types
             }
             return types.contains(other)
         }
         if let Self::Union(types) = other {
             if let Self::Union(other_types) = self {
-                for typ in types {
-                    if !other_types.contains(typ) { return false }
-                }
-                return true
+                return types == other_types
             }
             return types.contains(self)
         }
@@ -98,6 +93,7 @@ impl PartialEq for Type {
             (Self::String, Self::String) => true,
             (Self::Addr, Self::Addr) => true,
             (Self::Closure, Self::Closure) => true,
+            (Self::Pattern, Self::Pattern) => true,
             (Self::NativFunction, Self::NativFunction) => true,
             (Self::Function, Self::Function) => true,
             (Self::Type, Self::Type) => true,
@@ -109,7 +105,7 @@ impl PartialEq for Type {
 #[derive(Clone)]
 pub enum V {
     Null, Wirldcard, Int(i64), Float(f64), Bool(bool), String(String),
-    Addr(String), Closure(Node),
+    Addr(String), Closure(Node), Pattern(Vec<Type>),
     NativFunction(Vec<Type>, NativFunction), Function(Vec<Node>, Node),
     Type(Type)
 }
@@ -124,6 +120,7 @@ impl V {
             Self::String(_) => Type::String,
             Self::Addr(_) => Type::Addr,
             Self::Closure(_) => Type::Closure,
+            Self::Pattern(_) => Type::Pattern,
             Self::NativFunction(_, _) => Type::NativFunction,
             Self::Function(_, _) => Type::Function,
             Self::Type(_) => Type::Type,
@@ -210,6 +207,7 @@ impl std::fmt::Debug for V {
             Self::String(v) => write!(f, "{v}"),
             Self::Addr(v) => write!(f, "@{v}"),
             Self::Closure(v) => write!(f, "#{v}"),
+            Self::Pattern(types) => write!(f, "<{}>", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::NativFunction(_, v) => write!(f, "nativ-function:{:?}", v as *const NativFunction),
             Self::Function(_, body) => write!(f, "function:{:?}", body as *const Node),
             Self::Type(typ) => write!(f, "{typ}"),
@@ -228,6 +226,10 @@ impl PartialEq for V {
             (Self::Float(v1), Self::Float(v2)) => *v1 == *v2,
             (Self::Bool(v1), Self::Bool(v2)) => v1 == v2,
             (Self::String(v1), Self::String(v2)) => v1 == v2,
+            (Self::Addr(v1), Self::Addr(v2)) => v1 == v2,
+            (Self::Closure(v1), Self::Closure(v2)) => v1 == v2,
+            (Self::Pattern(v1), Self::Pattern(v2)) => v1 == v2,
+            (Self::Type(v1), Self::Type(v2)) => v1 == v2,
             _ => false
         }
     }
