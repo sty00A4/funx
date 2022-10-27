@@ -133,14 +133,61 @@ impl V {
         match self {
             Self::Int(v1) => match other {
                 Self::Int(v2) => Some(V::Int(v1 + v2)),
+                Self::Float(v2) => Some(V::Float((*v1 as f64) + v2)),
                 _ => None
             }
             Self::Float(v1) => match other {
                 Self::Float(v2) => Some(V::Float(v1 + v2)),
+                Self::Int(v2) => Some(V::Float(v1 + (*v2 as f64))),
                 _ => None
             }
             Self::String(v1) => match other {
                 Self::String(v2) => Some(V::String(v1.to_owned() + v2)),
+                _ => None
+            }
+            _ => None
+        }
+    }
+    pub fn sub(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Int(v1 - v2)),
+                Self::Float(v2) => Some(V::Float((*v1 as f64) - v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Float(v1 - v2)),
+                Self::Int(v2) => Some(V::Float(v1 - (*v2 as f64))),
+                _ => None
+            }
+            _ => None
+        }
+    }
+    pub fn mul(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Int(v1 * v2)),
+                Self::Float(v2) => Some(V::Float((*v1 as f64) * v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Float(v1 * v2)),
+                Self::Int(v2) => Some(V::Float(v1 * (*v2 as f64))),
+                _ => None
+            }
+            _ => None
+        }
+    }
+    pub fn div(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Int(v1 / v2)),
+                Self::Float(v2) => Some(V::Float((*v1 as f64) / v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Float(v1 / v2)),
+                Self::Int(v2) => Some(V::Float(v1 / (*v2 as f64))),
                 _ => None
             }
             _ => None

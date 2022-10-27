@@ -138,21 +138,37 @@ pub fn _print(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&
 }
 pub fn _add(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
-    if args.len() == 1 { return Ok((args[0].clone(), R::None)) }
-    if let V::Int(v) = &args[0] {
-        let mut sum = V::Int(0);
-        for i in 0..args.len() {
-            let v = sum.add(&args[i]);
-            if v.is_none() {
-                context.trace(poses[i]);
-                return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
-            }
-            sum = v.unwrap();
+    let mut sum = args[0].clone();
+    for i in 1..args.len() {
+        let v = sum.add(&args[i]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
         }
-        return Ok((sum, R::None))
+        sum = v.unwrap();
     }
-    context.trace(pos);
-    Err(E::ExpectedType { typ: Type::Union(vec![Type::Int, Type::Float, Type::String]), recv_typ: args[0].typ() })
+    Ok((sum, R::None))
+}
+pub fn _sub(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    if args.len() == 1 {
+        let number = V::Int(0).sub(&args[0]);
+        if number.is_none() {
+            context.trace(poses[0]);
+            return Err(E::UnaryOperation(args[0].typ()))
+        }
+        return Ok((number.unwrap(), R::None))
+    }
+    let mut sum = args[0].clone();
+    for i in 1..args.len() {
+        let v = sum.sub(&args[i]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
+        }
+        sum = v.unwrap();
+    }
+    Ok((sum, R::None))
 }
 
 pub fn funx_context(path: &String) -> Context {
@@ -169,5 +185,7 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(vec![], _print));
     let _ = context.def(&"+".to_string(),
     &V::NativFunction(vec![], _add));
+    let _ = context.def(&"-".to_string(),
+    &V::NativFunction(vec![], _sub));
     context
 }
