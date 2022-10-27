@@ -7,6 +7,74 @@ use crate::parser::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum R { None, Return, Break, Continue }
 
+pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: Vec<&Position>, node: &Node, context: &mut Context) -> Result<(V, R), E> {
+    match head_value {
+        V::NativFunction(params, f) => {
+            if let V::Pattern(_pattern) = params.as_ref() {
+                if &types != _pattern {
+                    context.trace(&head.1);
+                    return Err(E::PatternMissmatch { pattern1: V::Pattern(types), pattern2: params.as_ref().clone() })
+                }
+            } else if params.as_ref() != &V::Null {
+                context.trace(&head.1);
+                return Err(E::ExpectedType { typ: Type::Pattern, recv_typ: params.typ() })
+            }
+            f(args, context, &node.1, &poses)
+        }
+        V::Bool(v) => {
+            if v && args.len() >= 1 {
+                return Ok((args[0].clone(), R::None))
+            } else if args.len() >= 2 {
+                return Ok((args[1].clone(), R::None))
+            }
+            return Ok((head_value, R::None))
+        }
+        V::Closure(n) => {
+            context.push();
+            context.args(&args);
+            let value_ret = get(&n, context)?;
+            context.pop();
+            return Ok(value_ret)
+        }
+        V::Type(typ) => {
+            if args.len() == 0 { return Ok((V::Type(typ), R::None)) }
+            match typ {
+                Type::Function => {
+                    if args[0].typ() != Type::Pattern {
+                        return Err(E::ExpectedType { typ: Type::Pattern, recv_typ: args[0].typ() })
+                    }
+                    if args.len() >= 2 {
+                        return Ok((V::Function(Box::new(args[0].clone()), Box::new(args[1].clone())), R::None))
+                    }
+                    return Ok((V::Function(Box::new(args[0].clone()), Box::new(V::Null)), R::None))
+                }
+                _ => Ok((typ.cast(&args[0]), R::None))
+            }
+        }
+        V::Function(pattern, value) => {
+            if let V::Pattern(patt_types) = pattern.as_ref() {
+                if types.len() < patt_types.len() {
+                    context.trace(&head.1);
+                    return Err(E::ExpectedLen { len: patt_types.len(), recv_len: types.len() })
+                }
+                for i in 0..patt_types.len() {
+                    if patt_types[i] != types[i] {
+                        context.trace(&poses[i]);
+                        return Err(E::ExpectedType { typ: patt_types[i].clone(), recv_typ: types[i].clone() })
+                    }
+                }
+                return eval(value.as_ref().clone(), head, args, types, poses, node, context)
+            }
+            context.trace(&head.1);
+            Err(E::ExpectedType { typ: Type::Pattern, recv_typ: pattern.typ() })
+        }
+        _ => {
+            context.trace(&head.1);
+            Err(E::HeadOperation(head_value.clone()))
+        }
+    }
+}
+
 pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
     match &node.0 {
         N::Null => Ok((V::Null, R::None)),
@@ -72,43 +140,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
                 args.push(value);
             }
             let (head_value, _) = get(head, context)?;
-            match head_value {
-                V::NativFunction(params, f) => {
-                    if let V::Pattern(_pattern) = params.as_ref() {
-                        if &types != _pattern {
-                            return Err(E::PatternMissmatch { pattern1: V::Pattern(types), pattern2: params.as_ref().clone() })
-                        }
-                    } else if params.as_ref() != &V::Null {
-                        return Err(E::ExpectedType { typ: Type::Pattern, recv_typ: params.typ() })
-                    }
-                    f(args, context, &node.1, &poses)
-                }
-                V::Bool(v) => {
-                    if v && args.len() >= 1 {
-                        return Ok((args[0].clone(), R::None))
-                    } else if args.len() >= 2 {
-                        return Ok((args[1].clone(), R::None))
-                    }
-                    return Ok((head_value, R::None))
-                }
-                V::Closure(n) => {
-                    context.push();
-                    context.args(&args);
-                    let value_ret = get(&n, context)?;
-                    context.pop();
-                    return Ok(value_ret)
-                }
-                V::Type(typ) => {
-                    if args.len() == 0 { return Ok((V::Type(typ), R::None)) }
-                    match typ {
-                        _ => Ok((typ.cast(&args[0]), R::None))
-                    }
-                }
-                _ => {
-                    context.trace(&head.1);
-                    Err(E::HeadOperation(head_value))
-                }
-            }
+            eval(head_value, head, args, types, poses, node, context)
         }
         N::Body(nodes) => {
             for n in nodes {

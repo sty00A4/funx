@@ -1,0 +1,8 @@
+$ types
+def @number (union int float);
+def @some (exclude undefined);
+def @iter (union str vec);
+
+$ more operations
+def @! (function <bool> #(%0 false true));
+def @is (function <any any> #(= (type %0) (type %1)));

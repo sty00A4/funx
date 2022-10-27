@@ -216,6 +216,7 @@ impl Lexer {
             "float" => Ok(Some(Token(T::Type(Type::Float), Position::new(ln_start..self.ln, col_start..self.col)))),
             "bool" => Ok(Some(Token(T::Type(Type::Bool), Position::new(ln_start..self.ln, col_start..self.col)))),
             "str" => Ok(Some(Token(T::Type(Type::String), Position::new(ln_start..self.ln, col_start..self.col)))),
+            "vec" => Ok(Some(Token(T::Type(Type::Vector(Box::new(Type::Any))), Position::new(ln_start..self.ln, col_start..self.col)))),
             "nativ-function" => Ok(Some(Token(T::Type(Type::NativFunction), Position::new(ln_start..self.ln, col_start..self.col)))),
             "function" => Ok(Some(Token(T::Type(Type::Function), Position::new(ln_start..self.ln, col_start..self.col)))),
             "addr" => Ok(Some(Token(T::Type(Type::Addr), Position::new(ln_start..self.ln, col_start..self.col)))),

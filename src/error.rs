@@ -15,6 +15,7 @@ pub enum E {
     BinaryOperation { type1: Type, type2: Type },
     UnaryOperation(Type),
     PatternMissmatch { pattern1: V, pattern2: V },
+    ExpectedLen { len: usize, recv_len: usize },
 }
 impl E {
     pub fn display(&self, context: &Context) -> String {
@@ -49,6 +50,7 @@ impl std::fmt::Display for E {
             Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between {type1} and {type2}"),
             Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on {typ}"),
             Self::PatternMissmatch { pattern1, pattern2 } => write!(f, "ERROR: pattern {pattern1} does not match {pattern2}"),
+            Self::ExpectedLen { len, recv_len } => write!(f, "ERROR: expected pattern to be at least of length {len} not {recv_len} "),
         }
     }
 }

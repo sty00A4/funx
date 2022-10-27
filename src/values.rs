@@ -189,7 +189,7 @@ impl PartialEq for Type {
 pub enum V {
     Null, Wirldcard, Int(i64), Float(f64), Bool(bool), String(String), Vector(Vec<V>, Type),
     Addr(String), Closure(Node), Pattern(Vec<Type>),
-    NativFunction(Box<V>, NativFunction), Function(Box<V>, Node),
+    NativFunction(Box<V>, NativFunction), Function(Box<V>, Box<V>),
     Type(Type)
 }
 impl V {
@@ -294,7 +294,7 @@ impl std::fmt::Debug for V {
             Self::Closure(v) => write!(f, "#{v}"),
             Self::Pattern(types) => write!(f, "<{}>", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::NativFunction(_, v) => write!(f, "nativ-function:{:?}", v as *const NativFunction),
-            Self::Function(_, body) => write!(f, "function:{:?}", body as *const Node),
+            Self::Function(_, body) => write!(f, "function:{:?}", body as *const Box<V>),
             Self::Type(typ) => write!(f, "{typ}"),
         }
     }

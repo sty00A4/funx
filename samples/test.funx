@@ -1,1 +1,2 @@
-print (= (exclude bool) (union int float))
+def @add (function <int int int> #(+ %0 %1 %2));
+print (add 1 2);
