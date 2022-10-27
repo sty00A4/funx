@@ -19,20 +19,20 @@ pub enum E {
 }
 impl E {
     pub fn display(&self, context: &Context) -> String {
-        let text = fs::read_to_string(&context.path).unwrap_or_else(|_|"".to_string());
         let mut string: String = format!("{self}");
         string.push_str("\n");
-        if text.len() > 0 {
-            let lines: Vec<&str> = text.split("\n").collect();
-            for pos in context.trace.iter() {
+        for (pos, path) in context.trace.iter() {
+            let text = fs::read_to_string(path).unwrap_or_else(|_|"".to_string());
+            if text.len() > 0 {
+                let lines: Vec<&str> = text.split("\n").collect();
                 string.push_str(format!("{}:{}:{} - {}:{}\n",
                 &context.path, pos.0.start + 1, pos.1.start + 1, pos.0.end + 1, pos.1.end + 1).as_str());
                 string.push_str(lines[pos.0.start..pos.0.end + 1].join("\n").as_str());
                 string.push_str("\n");
+            } else {
+                string.push_str(text.as_str());
+                string.push_str("\n");
             }
-        } else {
-            string.push_str(text.as_str());
-            string.push_str("\n");
         }
         string
     }

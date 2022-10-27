@@ -15,7 +15,7 @@ impl Scope {
         for i in 0..self.args.len() {
             if word == &i.to_string() { return Err(()) }
         }
-        for (var, _) in &self.vars {
+        for (var, _) in self.vars.iter() {
             if word == var { return Err(()) }
         }
         self.vars.push((word.clone(), value.clone()));
@@ -37,7 +37,7 @@ pub struct Context {
     pub path: String,
     pub scopes: Vec<Scope>,
     pub global: Scope,
-    pub trace: Vec<Position>
+    pub trace: Vec<(Position, String)>
 }
 impl Context {
     pub fn new(path: &String) -> Self { Self { path: path.clone(), scopes: vec![], global: Scope::new(), trace: vec![] } }
@@ -51,7 +51,7 @@ impl Context {
         self.scopes.last_mut().unwrap().args = args.clone();
     }
     pub fn trace(&mut self, pos: &Position) {
-        self.trace.push(pos.clone())
+        self.trace.push((pos.clone(), self.path.clone()))
     }
     pub fn var(&mut self, word: &String, value: &V) -> Result<(), ()> {
         for scope in self.scopes.iter() {
@@ -76,13 +76,13 @@ impl Context {
     }
 }
 
-pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     let value = &args[1];
     if let V::Addr(word) = addr {
         let res = context.def(word, value);
         if res.is_err() {
-            context.trace(pos);
+            context.trace(&poses[0]);
             return Err(E::AlreadyDefined(word.clone()))
         }
         return Ok((V::Null, R::None))
@@ -235,9 +235,13 @@ pub fn _exclude(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&
 pub fn _load(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
     if let V::String(path) = &args[0] {
+        let _path = context.path.clone();
+        context.path = path.clone();
         runfile(path, context)?;
+        context.path = _path;
         return Ok((V::Null, R::None))
     }
+    context.trace(&poses[0]);
     Err(E::ExpectedType { typ: Type::String, recv_typ: args[0].typ() })
 }
 

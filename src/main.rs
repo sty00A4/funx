@@ -22,14 +22,13 @@ pub fn run(path: &String, text: &String, context: &mut Context) -> Result<(V, R)
     
     let node = parser::parse(&tokens, context)?;
     // println!("{node}");
-
+    
     evaluator::get(&node, context)
 }
 pub fn runfile(path: &String, context: &mut Context) -> Result<(V, R), E> {
     let res = fs::read_to_string(path);
     if res.is_err() { return Err(E::FileNotFound(path.clone())) }
     let text = res.unwrap();
-
     run(path, &text, context)
 }
 
@@ -41,6 +40,10 @@ fn main () {
         None => {},
         Some(path) => {
             let mut context = funx_context(&path);
+            context.path = "std/core.funx".to_string();
+            let res = runfile(&"std/core.funx".to_string(), &mut context);
+            if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
+            context.path = path.clone();
             let res = runfile(&path, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
         }
