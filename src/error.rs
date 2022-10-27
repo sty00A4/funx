@@ -45,10 +45,10 @@ impl std::fmt::Display for E {
             Self::Char(char) => write!(f, "ERROR: bad character {char:?}"),
             Self::UnexpectedToken(token) => write!(f, "ERROR: unexpected {}", token.name()),
             Self::HeadOperation(value) => write!(f, "ERROR: unexpected {} as head operation", value.typ()),
-            Self::ExpectedType{ typ, recv_typ } => write!(f, "ERROR: expected {typ} but got {recv_typ}"),
+            Self::ExpectedType{ typ, recv_typ } => write!(f, "ERROR: expected type {typ} but got type {recv_typ}"),
             Self::AlreadyDefined(word) => write!(f, "ERROR: word {word} is already defined"),
-            Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between {type1} and {type2}"),
-            Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on {typ}"),
+            Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between type {type1} and type {type2}"),
+            Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on type {typ}"),
             Self::PatternMissmatch { pattern1, pattern2 } => write!(f, "ERROR: pattern {pattern1} does not match {pattern2}"),
             Self::ExpectedLen { len, recv_len } => write!(f, "ERROR: expected pattern to be at least of length {len} not {recv_len} "),
         }

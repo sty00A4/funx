@@ -13,6 +13,7 @@ pub enum Type {
     Union(Vec<Type>), Exclude(Vec<Type>), Type
 }
 impl Type {
+    pub fn some() -> Self { Self::Exclude(vec![Type::Undefined]) }
     pub fn cast(&self, value: &V) -> V {
         match self {
             Self::Undefined => V::Null,

@@ -255,7 +255,7 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr])), _get));
 
     let _ = context.def(&"if".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Bool, Type::Any, Type::Any])), _if));
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Bool, Type::some(), Type::Any])), _if));
 
     let _ = context.def(&"+".to_string(),
     &V::NativFunction(Box::new(V::Null), _add));

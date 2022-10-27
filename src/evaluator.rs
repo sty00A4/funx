@@ -13,8 +13,12 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
             if let V::Pattern(_pattern) = params.as_ref() {
                 for i in 0.._pattern.len() {
                     if &_pattern[i] != types.get(i).unwrap_or_else(|| &Type::Undefined) {
-                        context.trace(&poses[i]);
-                        return Err(E::ExpectedType { typ: _pattern[i].clone(), recv_typ: types[i].clone() })
+                        if i < poses.len() {
+                            context.trace(&poses[i]);
+                            return Err(E::ExpectedType { typ: _pattern[i].clone(), recv_typ: types[i].clone() })
+                        }
+                        context.trace(&node.1);
+                        return Err(E::ExpectedType { typ: _pattern[i].clone(), recv_typ: Type::Undefined })
                     }
                 }
             } else if params.as_ref() != &V::Null {
@@ -57,8 +61,12 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
             if let V::Pattern(patt_types) = pattern.as_ref() {
                 for i in 0..patt_types.len() {
                     if &patt_types[i] != types.get(i).unwrap_or_else(|| &Type::Undefined) {
-                        context.trace(&poses[i]);
-                        return Err(E::ExpectedType { typ: patt_types[i].clone(), recv_typ: types[i].clone() })
+                        if i < poses.len() {
+                            context.trace(&poses[i]);
+                            return Err(E::ExpectedType { typ: patt_types[i].clone(), recv_typ: types[i].clone() })
+                        }
+                        context.trace(&node.1);
+                        return Err(E::ExpectedLen { len: patt_types.len(), recv_len: types.len() })
                     }
                 }
                 return eval(value.as_ref().clone(), head, args, types, poses, node, context)
