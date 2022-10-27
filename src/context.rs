@@ -33,10 +33,10 @@ impl Scope {
 
 #[derive(Debug, Clone)]
 pub struct Context {
-    path: String,
-    scopes: Vec<Scope>,
-    global: Scope,
-    trace: Vec<Position>
+    pub path: String,
+    pub scopes: Vec<Scope>,
+    pub global: Scope,
+    pub trace: Vec<Position>
 }
 impl Context {
     pub fn new(path: &String) -> Self { Self { path: path.clone(), scopes: vec![], global: Scope::new(), trace: vec![] } }
