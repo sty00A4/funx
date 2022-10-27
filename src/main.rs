@@ -25,7 +25,7 @@ fn main () {
         Some(path) => {
             let res = fs::read_to_string(&path); if res.is_err() { println!("could not open {path}"); return; }
             let text = res.unwrap();
-            let mut context = funx_context();
+            let mut context = funx_context(&path);
 
             let res = lexer::lex(&path, &text, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
@@ -39,7 +39,7 @@ fn main () {
             // println!("{node}");
 
 
-            let res = evaluator::get(&node, &path, &mut context);
+            let res = evaluator::get(&node, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
             let (value, ret) = res.unwrap();
             if ret != R::None { println!("{value}"); }

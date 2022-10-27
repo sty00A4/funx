@@ -1,2 +1,1 @@
-def @name "sty";
-print name;
+if true #(print "yes") #(print "no")

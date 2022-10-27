@@ -8,7 +8,7 @@ use crate::parser::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum R { None, Return, Break, Continue }
 
-pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), E> {
+pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
     match &node.0 {
         N::Null => Ok((V::Null, R::None)),
         N::Wirldcard => Ok((V::Wirldcard, R::None)),
@@ -20,7 +20,7 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             if let N::Word(addr) = &n.0 {
                 return Ok((V::Addr(addr.clone()), R::None))
             }
-            let (value, _) = get(n, path, context)?;
+            let (value, _) = get(n, context)?;
             if let V::String(addr) = value {
                 return Ok((V::Addr(addr), R::None))
             }
@@ -41,16 +41,31 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             let head = iter.next().unwrap();
             let mut args: Vec<V> = vec![];
             for n in iter {
-                let (value, _) = get(n, path, context)?;
+                let (value, _) = get(n, context)?;
                 args.push(value);
             }
-            let (head_value, _) = get(head, path, context)?;
+            let (head_value, _) = get(head, context)?;
             match head_value {
                 V::NativFunction(params, f) => {
                     if args.len() < params.len() {
                         while args.len() < params.len() { args.push(V::Null); }
                     }
                     f(args, context)
+                }
+                V::Bool(v) => {
+                    if v && args.len() >= 1 {
+                        return Ok((args[0].clone(), R::None))
+                    } else if args.len() >= 2 {
+                        return Ok((args[1].clone(), R::None))
+                    }
+                    return Ok((head_value, R::None))
+                }
+                V::Closure(n) => {
+                    context.push();
+                    context.args(&args);
+                    let value_ret = get(&n, context)?;
+                    context.pop();
+                    return Ok(value_ret)
                 }
                 _ => {
                     context.trace(&node.1);
@@ -60,7 +75,7 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
         }
         N::Body(nodes) => {
             for n in nodes {
-                let (value, ret) = get(n, path, context)?;
+                let (value, ret) = get(n, context)?;
                 if ret != R::None { return Ok((value, ret)) }
             }
             Ok((V::Null, R::None))
