@@ -75,31 +75,35 @@ impl Context {
     }
 }
 
-pub fn _def(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     let value = &args[1];
     if let V::Addr(word) = addr {
         let res = context.def(word, value);
         if res.is_err() {
+            context.trace(pos);
             return Err(E::AlreadyDefined(word.clone()))
         }
         return Ok((V::Null, R::None))
     }
+    context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _var(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     let value = &args[1];
     if let V::Addr(word) = addr {
         let res = context.var(word, value);
         if res.is_err() {
+            context.trace(pos);
             return Err(E::AlreadyDefined(word.clone()))
         }
         return Ok((V::Null, R::None))
     }
+    context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _get(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+pub fn _get(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     if let V::Addr(word) = addr {
         let v = context.get(word);
@@ -108,9 +112,10 @@ pub fn _get(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
         }
         return Ok((V::Null, R::None))
     }
+    context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _if(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+pub fn _if(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     let cond = &args[0];
     let case = &args[1];
     let else_case = &args[2];
@@ -123,13 +128,31 @@ pub fn _if(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
     }
     return Ok((V::Null, R::None))
 }
-pub fn _print(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+pub fn _print(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     for i in 0..args.len() {
         print!("{}", &args[i]);
         if i < args.len() - 1 { print!(" "); }
     }
     if args.len() > 0 { println!(); }
     Ok((V::Null, R::None))
+}
+pub fn _add(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    if args.len() == 1 { return Ok((args[0].clone(), R::None)) }
+    if let V::Int(v) = &args[0] {
+        let mut sum = V::Int(0);
+        for i in 0..args.len() {
+            let v = sum.add(&args[i]);
+            if v.is_none() {
+                context.trace(poses[i]);
+                return Err(E::BinaryOperation { type1: sum.typ(), type2: args[i].typ() })
+            }
+            sum = v.unwrap();
+        }
+        return Ok((sum, R::None))
+    }
+    context.trace(pos);
+    Err(E::ExpectedType { typ: Type::Union(vec![Type::Int, Type::Float, Type::String]), recv_typ: args[0].typ() })
 }
 
 pub fn funx_context(path: &String) -> Context {
@@ -144,5 +167,7 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(vec![Type::Bool, Type::Any, Type::Any], _if));
     let _ = context.def(&"print".to_string(),
     &V::NativFunction(vec![], _print));
+    let _ = context.def(&"+".to_string(),
+    &V::NativFunction(vec![], _add));
     context
 }

@@ -50,8 +50,10 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             let mut iter = nodes.iter();
             let head = iter.next().unwrap();
             let mut args: Vec<V> = vec![];
+            let mut poses: Vec<&Position> = vec![];
             for n in iter {
                 let (value, _) = get(n, context)?;
+                poses.push(&n.1);
                 args.push(value);
             }
             let (head_value, _) = get(head, context)?;
@@ -60,7 +62,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
                     if args.len() < params.len() {
                         while args.len() < params.len() { args.push(V::Null); }
                     }
-                    f(args, context)
+                    f(args, context, &node.1, &poses)
                 }
                 V::Bool(v) => {
                     if v && args.len() >= 1 {

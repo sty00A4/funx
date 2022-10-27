@@ -2,8 +2,9 @@ use crate::error::*;
 use crate::context::*;
 use crate::parser::*;
 use crate::evaluator::*;
+use crate::position::Position;
 
-pub type NativFunction = fn(Vec<V>, &mut Context) -> Result<(V, R), E>;
+pub type NativFunction = fn(Vec<V>, &mut Context, &Position, &Vec<&Position>) -> Result<(V, R), E>;
 
 #[derive(Clone)]
 pub enum Type {
@@ -126,6 +127,23 @@ impl V {
             Self::NativFunction(_, _) => Type::NativFunction,
             Self::Function(_, _) => Type::Function,
             Self::Type(_) => Type::Type,
+        }
+    }
+    pub fn add(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Int(v1 + v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Float(v1 + v2)),
+                _ => None
+            }
+            Self::String(v1) => match other {
+                Self::String(v2) => Some(V::String(v1.to_owned() + v2)),
+                _ => None
+            }
+            _ => None
         }
     }
 }

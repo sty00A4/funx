@@ -16,6 +16,8 @@ pub enum E {
     HeadOperation(V),
     ExpectedType { typ: Type, recv_typ: Type },
     AlreadyDefined(String),
+    BinaryOperation { type1: Type, type2: Type },
+    UnaryOperation(Type),
 }
 impl E {
     pub fn display(&self, context: &Context) -> String {
@@ -47,6 +49,8 @@ impl std::fmt::Display for E {
             Self::HeadOperation(value) => write!(f, "ERROR: unexpected {} as head operation", value.typ()),
             Self::ExpectedType{ typ, recv_typ } => write!(f, "ERROR: expected {typ} but got {recv_typ}"),
             Self::AlreadyDefined(word) => write!(f, "ERROR: word {word} is already defined"),
+            Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between {type1} and {type2}"),
+            Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on {typ}"),
         }
     }
 }
