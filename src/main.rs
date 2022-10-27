@@ -5,9 +5,11 @@
 mod position;
 mod error;
 mod values;
+mod context;
 mod lexer;
 mod parser;
 mod evaluator;
+use context::*;
 use lexer::*;
 use parser::*;
 use evaluator::*;
@@ -23,7 +25,7 @@ fn main () {
         Some(path) => {
             let res = fs::read_to_string(&path); if res.is_err() { println!("could not open {path}"); return; }
             let text = res.unwrap();
-            let mut context = Context::new();
+            let mut context = funx_context();
 
             let res = lexer::lex(&path, &text, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
@@ -40,7 +42,7 @@ fn main () {
             let res = evaluator::get(&node, &path, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&path, &context)); return }
             let (value, ret) = res.unwrap();
-            println!("{value}");
+            if ret != R::None { println!("{value}"); }
         }
     }
 }

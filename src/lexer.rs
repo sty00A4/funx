@@ -1,6 +1,7 @@
 use crate::position::*;
 use crate::error::*;
 use crate::values::*;
+use crate::context::*;
 use crate::evaluator::*;
 
 static WS: [&str; 4] = [" ", "\n", "\r", "\t"];

@@ -1,7 +1,7 @@
 use std::fmt::format;
-
 use crate::position::*;
 use crate::values::*;
+use crate::context::*;
 use crate::lexer::*;
 use crate::parser::*;
 use crate::evaluator::*;
@@ -14,11 +14,13 @@ pub enum E {
     UnexpectedToken(T),
     HeadOperation(V),
     ExpectedType { typ: Type, recv_typ: Type },
+    AlreadyDefined(String),
 }
 impl E {
     pub fn display(&self, path: &String, context: &Context) -> String {
         let mut string: String = format!("{self}");
         string.push_str("\n");
+        // todo tracing
         string
     }
 }
@@ -31,6 +33,7 @@ impl std::fmt::Display for E {
             Self::UnexpectedToken(token) => write!(f, "ERROR: unexpected {}", token.name()),
             Self::HeadOperation(value) => write!(f, "ERROR: unexpected {} as head operation", value.typ()),
             Self::ExpectedType{ typ, recv_typ } => write!(f, "ERROR: expected {typ} but got {recv_typ}"),
+            Self::AlreadyDefined(word) => write!(f, "ERROR: word {word} is already defined"),
         }
     }
 }

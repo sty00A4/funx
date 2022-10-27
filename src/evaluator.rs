@@ -1,29 +1,9 @@
 use crate::position::*;
 use crate::error::*;
 use crate::values::*;
+use crate::context::*;
 use crate::lexer::*;
 use crate::parser::*;
-
-#[derive(Debug, Clone)]
-pub struct Scope {
-    vars: Vec<(String, V)>,
-}
-impl Scope {
-    pub fn new() -> Self { Self { vars: vec![] } }
-}
-
-#[derive(Debug, Clone)]
-pub struct Context {
-    scopes: Vec<Scope>,
-    global: Scope,
-    trace: Vec<Position>
-}
-impl Context {
-    pub fn new() -> Self { Self { scopes: vec![], global: Scope::new(), trace: vec![] } }
-    pub fn trace(&mut self, pos: &Position) {
-        self.trace.push(pos.clone())
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum R { None, Return, Break, Continue }
@@ -46,10 +26,14 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             }
             context.trace(&node.1);
             return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
-        },
+        }
         N::Closure(n) => Ok((V::Closure(n.as_ref().clone()), R::None)),
         N::Word(word) => {
-            Ok((V::Null, R::None))
+            let v = context.get(word);
+            if let Some(value) = v {
+                return Ok((value.clone(), R::None))
+            }
+            return Ok((V::Null, R::None))
         }
         N::Eval(nodes) => {
             if nodes.len() == 0 { return Ok((V::Null, R::None)) }
@@ -62,7 +46,12 @@ pub fn get(node: &Node, path: &String, context: &mut Context) -> Result<(V, R), 
             }
             let (head_value, _) = get(head, path, context)?;
             match head_value {
-                V::NativFunction(f) => f(args),
+                V::NativFunction(params, f) => {
+                    if args.len() < params.len() {
+                        while args.len() < params.len() { args.push(V::Null); }
+                    }
+                    f(args, context)
+                }
                 _ => {
                     context.trace(&node.1);
                     Err(E::HeadOperation(head_value))

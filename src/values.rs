@@ -1,12 +1,15 @@
 use crate::error::*;
+use crate::context::*;
 use crate::parser::*;
 use crate::evaluator::*;
+
+pub type NativFunction = fn(Vec<V>, &mut Context) -> Result<(V, R), E>;
 
 #[derive(Clone)]
 pub enum Type {
     Undefined, Any, Int, Float, Bool, String, NativFunction, Function,
     Addr, Closure,
-    Union(Vec<Type>)
+    Union(Vec<Type>), Type
 }
 impl std::fmt::Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -27,6 +30,7 @@ impl std::fmt::Debug for Type {
             Self::Addr => write!(f, "addr"),
             Self::Closure => write!(f, "closure"),
             Self::Union(types) => write!(f, "{}", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
+            Self::Type => write!(f, "type"),
         }
     }
 }
@@ -58,8 +62,11 @@ impl PartialEq for Type {
             (Self::Float, Self::Float) => true,
             (Self::Bool, Self::Bool) => true,
             (Self::String, Self::String) => true,
+            (Self::Addr, Self::Addr) => true,
+            (Self::Closure, Self::Closure) => true,
             (Self::NativFunction, Self::NativFunction) => true,
             (Self::Function, Self::Function) => true,
+            (Self::Type, Self::Type) => true,
             _ => false
         }
     }
@@ -69,7 +76,8 @@ impl PartialEq for Type {
 pub enum V {
     Null, Wirldcard, Int(i64), Float(f64), Bool(bool), String(String),
     Addr(String), Closure(Node),
-    NativFunction(fn(Vec<V>) -> Result<(V, R), E>), Function(Vec<Node>, Node)
+    NativFunction(Vec<Type>, NativFunction), Function(Vec<Node>, Node),
+    Type(Type)
 }
 impl V {
     pub fn typ(&self) -> Type {
@@ -82,8 +90,9 @@ impl V {
             Self::String(_) => Type::String,
             Self::Addr(_) => Type::Addr,
             Self::Closure(_) => Type::Closure,
-            Self::NativFunction(_) => Type::NativFunction,
+            Self::NativFunction(_, _) => Type::NativFunction,
             Self::Function(_, _) => Type::Function,
+            Self::Type(_) => Type::Type,
         }
     }
 }
@@ -103,8 +112,9 @@ impl std::fmt::Debug for V {
             Self::String(v) => write!(f, "{v}"),
             Self::Addr(v) => write!(f, "@{v}"),
             Self::Closure(v) => write!(f, "#{v}"),
-            Self::NativFunction(v) => write!(f, "nativ-function:{:?}", v as *const fn(Vec<V>) -> Result<(V, R), E>),
+            Self::NativFunction(_, v) => write!(f, "nativ-function:{:?}", v as *const NativFunction),
             Self::Function(_, body) => write!(f, "function:{:?}", body as *const Node),
+            Self::Type(typ) => write!(f, "{typ}"),
         }
     }
 }
@@ -120,7 +130,6 @@ impl PartialEq for V {
             (Self::Float(v1), Self::Float(v2)) => *v1 == *v2,
             (Self::Bool(v1), Self::Bool(v2)) => v1 == v2,
             (Self::String(v1), Self::String(v2)) => v1 == v2,
-            (Self::NativFunction(v1), Self::NativFunction(v2)) => v1 == v2,
             _ => false
         }
     }
