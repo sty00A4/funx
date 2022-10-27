@@ -14,7 +14,7 @@ impl Scope {
         for i in 0..self.args.len() {
             if word == &i.to_string() { return Err(()) }
         }
-        for (var, value) in &self.vars {
+        for (var, _) in &self.vars {
             if word == var { return Err(()) }
         }
         self.vars.push((word.clone(), value.clone()));
@@ -75,7 +75,7 @@ impl Context {
     }
 }
 
-pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     let value = &args[1];
     if let V::Addr(word) = addr {
@@ -89,7 +89,7 @@ pub fn _def(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     let value = &args[1];
     if let V::Addr(word) = addr {
@@ -103,7 +103,7 @@ pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _get(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _get(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let addr = &args[0];
     if let V::Addr(word) = addr {
         let v = context.get(word);
@@ -115,7 +115,7 @@ pub fn _get(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     context.trace(pos);
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
-pub fn _if(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _if(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let cond = &args[0];
     let case = &args[1];
     let else_case = &args[2];
@@ -128,7 +128,7 @@ pub fn _if(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Pos
     }
     return Ok((V::Null, R::None))
 }
-pub fn _print(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _print(args: Vec<V>, _: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     for i in 0..args.len() {
         print!("{}", &args[i]);
         if i < args.len() - 1 { print!(" "); }
@@ -136,7 +136,7 @@ pub fn _print(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&
     if args.len() > 0 { println!(); }
     Ok((V::Null, R::None))
 }
-pub fn _add(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _add(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
     let mut sum = args[0].clone();
     for i in 1..args.len() {
@@ -149,7 +149,7 @@ pub fn _add(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     }
     Ok((sum, R::None))
 }
-pub fn _sub(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _sub(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
     if args.len() == 1 {
         let number = V::Int(0).sub(&args[0]);
@@ -170,7 +170,7 @@ pub fn _sub(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     }
     Ok((sum, R::None))
 }
-pub fn _mul(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _mul(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
     let mut sum = args[0].clone();
     for i in 1..args.len() {
@@ -183,7 +183,7 @@ pub fn _mul(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Po
     }
     Ok((sum, R::None))
 }
-pub fn _div(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+pub fn _div(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
     let mut sum = args[0].clone();
     for i in 1..args.len() {

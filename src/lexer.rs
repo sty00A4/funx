@@ -1,8 +1,5 @@
 use crate::position::*;
 use crate::error::*;
-use crate::values::*;
-use crate::context::*;
-use crate::evaluator::*;
 
 static WS: [&str; 4] = [" ", "\n", "\r", "\t"];
 static DIGITS: [&str; 10] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -54,12 +51,12 @@ impl std::fmt::Display for Token {
 }
 
 pub struct Lexer {
-    path: String, text: String,
+    text: String,
     idx: usize, ln: usize, col: usize
 }
 impl Lexer {
-    pub fn new(path: &String, text: &String) -> Self {
-        Self { path: path.clone(), text: text.clone(), idx: 0, ln: 0, col: 0 }
+    pub fn new(text: &String) -> Self {
+        Self { text: text.clone(), idx: 0, ln: 0, col: 0 }
     }
     pub fn char(&self) -> &str {
         if self.idx >= self.text.len() { return "" }
@@ -74,7 +71,7 @@ impl Lexer {
         }
     }
     pub fn pos(&self) -> (usize, usize) { (self.ln, self.col) }
-    pub fn next(&mut self, context: &mut Context) -> Result<Option<Token>, E> {
+    pub fn next(&mut self) -> Result<Option<Token>, E> {
         while WS.contains(&self.char()) { self.advance(); }
         if self.char() == "$" {
             self.advance();
@@ -215,11 +212,11 @@ impl Lexer {
     }
 }
 
-pub fn lex(path: &String, text: &String, context: &mut Context) -> Result<Vec<Token>, E> {
-    let mut lexer = Lexer::new(path, text);
+pub fn lex(text: &String) -> Result<Vec<Token>, E> {
+    let mut lexer = Lexer::new(text);
     let mut tokens: Vec<Token> = vec![];
     loop {
-        let token = lexer.next(context)?;
+        let token = lexer.next()?;
         if token.is_none() { break }
         tokens.push(token.unwrap());
     }

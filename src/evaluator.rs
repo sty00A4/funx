@@ -2,7 +2,6 @@ use crate::position::*;
 use crate::error::*;
 use crate::values::*;
 use crate::context::*;
-use crate::lexer::*;
 use crate::parser::*;
 
 #[derive(Debug, Clone, PartialEq)]

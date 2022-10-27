@@ -10,8 +10,6 @@ mod lexer;
 mod parser;
 mod evaluator;
 use context::*;
-use lexer::*;
-use parser::*;
 use evaluator::*;
 
 use std::{env, fs};
@@ -27,13 +25,13 @@ fn main () {
             let text = res.unwrap();
             let mut context = funx_context(&path);
 
-            let res = lexer::lex(&path, &text, &mut context);
+            let res = lexer::lex(&text);
             if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
             let tokens = res.unwrap();
             // println!("{tokens:?}");
             if tokens.len() == 0 { return }
             
-            let res = parser::parse(&path, &tokens, &mut context);
+            let res = parser::parse(&tokens, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
             let node = res.unwrap();
             // println!("{node}");

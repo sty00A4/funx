@@ -1,9 +1,7 @@
 use crate::position::*;
 use crate::error::*;
-use crate::values::*;
 use crate::context::*;
 use crate::lexer::*;
-use crate::evaluator::*;
 
 #[derive(Clone, PartialEq)]
 pub enum N {
@@ -198,7 +196,7 @@ impl Parser {
     }
 }
 
-pub fn parse(path: &String, tokens: &Vec<Token>, context: &mut Context) -> Result<Node, E> {
+pub fn parse(tokens: &Vec<Token>, context: &mut Context) -> Result<Node, E> {
     let mut parser = Parser::new(tokens);
     parser.parse(context)
 }
