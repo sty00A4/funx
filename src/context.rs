@@ -205,28 +205,48 @@ pub fn _eq(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Posit
     }
     return Ok((V::Bool(true), R::None))
 }
+pub fn _union(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Type(Type::Union(vec![Type::Any])), R::None)) }
+    let mut types: Vec<Type> = vec![];
+    for i in 0..args.len() {
+        if let V::Type(typ) = &args[i] {
+            types.push(typ.clone());
+        } else {
+            context.trace(&poses[i]);
+            return Err(E::ExpectedType { typ: Type::Type, recv_typ: args[i].typ() })
+        }
+    }
+    return Ok((V::Type(Type::Union(types)), R::None))
+}
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
     let _ = context.def(&"var".to_string(),
-    &V::NativFunction(vec![Type::Addr, Type::Any], _var));
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _var));
     let _ = context.def(&"def".to_string(),
-    &V::NativFunction(vec![Type::Addr, Type::Any], _def));
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _def));
     let _ = context.def(&"get".to_string(),
-    &V::NativFunction(vec![Type::Addr], _get));
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr])), _get));
+
     let _ = context.def(&"if".to_string(),
-    &V::NativFunction(vec![Type::Bool, Type::Any, Type::Any], _if));
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Bool, Type::Any, Type::Any])), _if));
+
     let _ = context.def(&"print".to_string(),
-    &V::NativFunction(vec![], _print));
+    &V::NativFunction(Box::new(V::Null), _print));
+
     let _ = context.def(&"+".to_string(),
-    &V::NativFunction(vec![], _add));
+    &V::NativFunction(Box::new(V::Null), _add));
     let _ = context.def(&"-".to_string(),
-    &V::NativFunction(vec![], _sub));
+    &V::NativFunction(Box::new(V::Null), _sub));
     let _ = context.def(&"*".to_string(),
-    &V::NativFunction(vec![], _mul));
+    &V::NativFunction(Box::new(V::Null), _mul));
     let _ = context.def(&"/".to_string(),
-    &V::NativFunction(vec![], _div));
+    &V::NativFunction(Box::new(V::Null), _div));
+
     let _ = context.def(&"=".to_string(),
-    &V::NativFunction(vec![], _eq));
+    &V::NativFunction(Box::new(V::Null), _eq));
+    
+    let _ = context.def(&"union".to_string(),
+    &V::NativFunction(Box::new(V::Null), _union));
     context
 }

@@ -63,17 +63,23 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             let mut iter = nodes.iter();
             let head = iter.next().unwrap();
             let mut args: Vec<V> = vec![];
+            let mut types: Vec<Type> = vec![];
             let mut poses: Vec<&Position> = vec![];
             for n in iter {
                 let (value, _) = get(n, context)?;
                 poses.push(&n.1);
+                types.push(value.typ());
                 args.push(value);
             }
             let (head_value, _) = get(head, context)?;
             match head_value {
                 V::NativFunction(params, f) => {
-                    if args.len() < params.len() {
-                        while args.len() < params.len() { args.push(V::Null); }
+                    if let V::Pattern(_pattern) = params.as_ref() {
+                        if &types != _pattern {
+                            return Err(E::PatternMissmatch { pattern1: V::Pattern(types), pattern2: params.as_ref().clone() })
+                        }
+                    } else if params.as_ref() != &V::Null {
+                        return Err(E::ExpectedType { typ: Type::Pattern, recv_typ: params.typ() })
                     }
                     f(args, context, &node.1, &poses)
                 }
@@ -99,7 +105,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
                     }
                 }
                 _ => {
-                    context.trace(&node.1);
+                    context.trace(&head.1);
                     Err(E::HeadOperation(head_value))
                 }
             }

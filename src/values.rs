@@ -118,7 +118,7 @@ impl PartialEq for Type {
 pub enum V {
     Null, Wirldcard, Int(i64), Float(f64), Bool(bool), String(String), Vector(Vec<V>, Type),
     Addr(String), Closure(Node), Pattern(Vec<Type>),
-    NativFunction(Vec<Type>, NativFunction), Function(Vec<Node>, Node),
+    NativFunction(Box<V>, NativFunction), Function(Box<V>, Node),
     Type(Type)
 }
 impl V {

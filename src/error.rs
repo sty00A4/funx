@@ -14,6 +14,7 @@ pub enum E {
     AlreadyDefined(String),
     BinaryOperation { type1: Type, type2: Type },
     UnaryOperation(Type),
+    PatternMissmatch { pattern1: V, pattern2: V },
 }
 impl E {
     pub fn display(&self, context: &Context) -> String {
@@ -47,6 +48,7 @@ impl std::fmt::Display for E {
             Self::AlreadyDefined(word) => write!(f, "ERROR: word {word} is already defined"),
             Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between {type1} and {type2}"),
             Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on {typ}"),
+            Self::PatternMissmatch { pattern1, pattern2 } => write!(f, "ERROR: pattern {pattern1} does not match {pattern2}"),
         }
     }
 }
