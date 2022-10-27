@@ -138,7 +138,7 @@ impl Parser {
                 nodes.push(node);
             }
             self.advance();
-            return Ok(Node(N::Pattern(nodes), Position::new(start.0.start..self.pos().0.end, start.1.start..self.pos().1.end)))
+            return Ok(Node(N::Vector(nodes), Position::new(start.0.start..self.pos().0.end, start.1.start..self.pos().1.end)))
         }
         if self.token() == &T::Addr {
             self.advance();

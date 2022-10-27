@@ -1,1 +1,1 @@
-print (= <int float> <int float>)
+print (type [1 2 3])

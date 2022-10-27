@@ -112,7 +112,22 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             Ok((V::Null, R::None))
         }
         N::Vector(nodes) => {
-            Ok((V::Null, R::None))
+            let mut values: Vec<V> = vec![];
+            let mut types: Vec<Type> = vec![];
+            for n in nodes {
+                let (value, _) = get(n, context)?;
+                let typ = value.typ();
+                values.push(value);
+                if !types.contains(&typ) { types.push(typ) }
+            }
+            let mut typ = Type::Any;
+            if types.len() > 0 {
+                typ = types[0].clone();
+                if types.len() > 1 {
+                    typ = Type::Union(types);
+                }
+            }
+            Ok((V::Vector(values, typ), R::None))
         }
     }
 }
