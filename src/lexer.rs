@@ -6,12 +6,12 @@ use crate::evaluator::*;
 
 static WS: [&str; 4] = [" ", "\n", "\r", "\t"];
 static DIGITS: [&str; 10] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-static SYMBOL: [&str; 13] = ["(", ")", "{", "}", "<", ">", "[", "]", "@", "#", "\"", "'", ";"];
+static SYMBOL: [&str; 14] = ["(", ")", "{", "}", "<", ">", "[", "]", "@", "%", "#", "\"", "'", ";"];
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum T {
     NO,
-    EvalIn, EvalOut, BodyIn, BodyOut, PattIn, PattOut, VecIn, VecOut, Addr, Closure, End,
+    EvalIn, EvalOut, BodyIn, BodyOut, PattIn, PattOut, VecIn, VecOut, Addr, Arg, Closure, End,
     Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String),
 }
 impl T {
@@ -27,6 +27,7 @@ impl T {
             Self::VecIn => "'['",
             Self::VecOut => "']'",
             Self::Addr => "'@'",
+            Self::Arg => "'%'",
             Self::Closure => "'#'",
             Self::End => "';'",
             Self::Null => "'null'",
@@ -132,6 +133,12 @@ impl Lexer {
             self.advance();
             return Ok(Some(
                 Token(T::Addr, Position::new(ln_start..self.ln, col_start..self.col))
+            ))
+        }
+        if self.char() == "%" {
+            self.advance();
+            return Ok(Some(
+                Token(T::Arg, Position::new(ln_start..self.ln, col_start..self.col))
             ))
         }
         if self.char() == "#" {

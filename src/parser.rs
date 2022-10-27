@@ -7,7 +7,8 @@ use crate::evaluator::*;
 
 #[derive(Clone, PartialEq)]
 pub enum N {
-    Eval(Vec<Node>), Body(Vec<Node>), Pattern(Vec<Node>), Vector(Vec<Node>), Addr(Box<Node>), Closure(Box<Node>),
+    Eval(Vec<Node>), Body(Vec<Node>), Pattern(Vec<Node>), Vector(Vec<Node>),
+    Addr(Box<Node>), Arg(Box<Node>), Closure(Box<Node>),
     Null, Wirldcard, Word(String), Int(i64), Float(f64), Bool(bool), String(String),
 }
 impl std::fmt::Debug for N {
@@ -18,6 +19,7 @@ impl std::fmt::Debug for N {
             Self::Pattern(nodes) => write!(f, "<{}>", nodes.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::Vector(nodes) => write!(f, "[{}]", nodes.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::Addr(node) => write!(f, "@{node}"),
+            Self::Arg(node) => write!(f, "%{node}"),
             Self::Closure(node) => write!(f, "#{node}"),
             Self::Null => write!(f, "null"),
             Self::Wirldcard => write!(f, "_"),
@@ -143,6 +145,12 @@ impl Parser {
             let node = self.next(context)?;
             let pos = node.1.clone();
             return Ok(Node(N::Addr(Box::new(node)), Position::new(start.0.start..pos.0.end, start.1.start..pos.1.end)))
+        }
+        if self.token() == &T::Arg {
+            self.advance();
+            let node = self.next(context)?;
+            let pos = node.1.clone();
+            return Ok(Node(N::Arg(Box::new(node)), Position::new(start.0.start..pos.0.end, start.1.start..pos.1.end)))
         }
         if self.token() == &T::Closure {
             self.advance();

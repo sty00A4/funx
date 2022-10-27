@@ -28,6 +28,15 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             context.trace(&node.1);
             return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
         }
+        N::Arg(n) => {
+            let (mut value, _) = get(n, context)?;
+            value = Type::Int.cast(&value);
+            if let V::Int(v) = value {
+                return Ok((context.get(&v.to_string()).unwrap_or_else(||&V::Null).clone(), R::None))
+            }
+            context.trace(&node.1);
+            return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
+        }
         N::Closure(n) => Ok((V::Closure(n.as_ref().clone()), R::None)),
         N::Word(word) => {
             let v = context.get(word);

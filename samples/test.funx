@@ -1,1 +1,1 @@
-#(print (get @0)) "hello"
+#(print %0) "hello"
