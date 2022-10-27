@@ -20,7 +20,8 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             if let N::Word(addr) = &n.0 {
                 return Ok((V::Addr(addr.clone()), R::None))
             }
-            let (value, _) = get(n, context)?;
+            let (mut value, _) = get(n, context)?;
+            value = Type::String.cast(&value);
             if let V::String(addr) = value {
                 return Ok((V::Addr(addr), R::None))
             }

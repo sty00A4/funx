@@ -11,6 +11,39 @@ pub enum Type {
     Addr, Closure,
     Union(Vec<Type>), Type
 }
+impl Type {
+    pub fn cast(&self, value: &V) -> V {
+        match self {
+            Self::Undefined => V::Null,
+            Self::Any => value.clone(),
+            Self::Int => match value {
+                V::Null => V::Int(0),
+                V::Int(v) => V::Int(*v),
+                V::Float(v) => V::Int(*v as i64),
+                V::Bool(v) => V::Int(*v as i64),
+                _ => V::Null
+            }
+            Self::Float => match value {
+                V::Null => V::Float(0.0),
+                V::Int(v) => V::Float(*v as f64),
+                V::Float(v) => V::Float(*v),
+                V::Bool(v) => V::Float((*v as i64) as f64),
+                _ => V::Null
+            }
+            Self::Bool => match value {
+                V::Null => V::Bool(false),
+                V::Int(v) => V::Bool(*v != 0),
+                V::Float(v) => V::Bool(*v != 0.0),
+                V::Bool(v) => V::Bool(*v),
+                _ => V::Null
+            }
+            Self::String => V::String(value.to_string()),
+            Self::Addr => V::Addr(value.to_string()),
+            Self::Type => V::Type(value.typ()),
+            _ => V::Null
+        }
+    }
+}
 impl std::fmt::Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{self:?}")

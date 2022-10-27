@@ -99,6 +99,17 @@ pub fn _var(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
     }
     Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
 }
+pub fn _get(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
+    let addr = &args[0];
+    if let V::Addr(word) = addr {
+        let v = context.get(word);
+        if v.is_some() {
+            return Ok((v.unwrap().clone(), R::None))
+        }
+        return Ok((V::Null, R::None))
+    }
+    Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
+}
 pub fn _if(args: Vec<V>, context: &mut Context) -> Result<(V, R), E> {
     let cond = &args[0];
     let case = &args[1];
@@ -127,6 +138,8 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(vec![Type::Addr, Type::Any], _var));
     let _ = context.def(&"def".to_string(),
     &V::NativFunction(vec![Type::Addr, Type::Any], _def));
+    let _ = context.def(&"get".to_string(),
+    &V::NativFunction(vec![Type::Addr], _get));
     let _ = context.def(&"if".to_string(),
     &V::NativFunction(vec![Type::Bool, Type::Any, Type::Any], _if));
     let _ = context.def(&"print".to_string(),
