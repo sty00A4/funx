@@ -54,6 +54,18 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
                     }
                     return Ok((V::Function(Box::new(args[0].clone()), Box::new(V::Null)), R::None))
                 }
+                Type::Vector(_) => {
+                    let mut vec_types: Vec<Type> = vec![];
+                    for i in 0..args.len() {
+                        if let V::Type(typ) = &args[i] {
+                            if !vec_types.contains(&typ) { vec_types.push(typ.clone()) }
+                        } else {
+                            context.trace(&poses[i]);
+                            return Err(E::ExpectedType { typ: Type::Type, recv_typ: args[i].typ() })
+                        }
+                    }
+                    Ok((V::Type(Type::Vector(Box::new(Type::Union(vec_types)))), R::None))
+                }
                 _ => Ok((typ.cast(&args[0]), R::None))
             }
         }
