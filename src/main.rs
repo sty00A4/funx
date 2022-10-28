@@ -31,6 +31,13 @@ pub fn runfile(path: &String, context: &mut Context) -> Result<(V, R), E> {
     let text = res.unwrap();
     run(path, &text, context)
 }
+pub fn runfile_core(path: &String) -> Result<(V, R), E>{
+    let mut context = funx_context(&path);
+    context.path = "std/core.funx".to_string();
+    runfile(&"std/core.funx".to_string(), &mut context)?;
+    context.path = path.clone();
+    runfile(&path, &mut context)
+}
 
 fn main () {
     let mut args = env::args();
@@ -47,5 +54,22 @@ fn main () {
             let res = runfile(&path, &mut context);
             if res.is_err() { println!("{}", res.err().unwrap().display(&context)); return }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    #[test]
+    fn inc() -> Result<(), E> {
+        runfile_core(&"tests/inc.funx".to_string())?; Ok(())
+    }
+    #[test]
+    fn not() -> Result<(), E> {
+        runfile_core(&"tests/bool.funx".to_string())?; Ok(())
+    }
+    #[test]
+    fn types() -> Result<(), E> {
+        runfile_core(&"tests/types.funx".to_string())?; Ok(())
     }
 }

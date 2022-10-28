@@ -60,16 +60,14 @@ impl std::fmt::Debug for Type {
             Self::Float => write!(f, "float"),
             Self::Bool => write!(f, "bool"),
             Self::String => write!(f, "str"),
-            Self::Vector(typ) =>
-            if let Type::Union(types) = typ.as_ref() { write!(f, "vec<{}>", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")) }
-            else { write!(f, "vec<{typ}>") },
+            Self::Vector(typ) => write!(f, "vec<{typ}>"),
             Self::NativFunction => write!(f, "nativ-function"),
             Self::Function => write!(f, "function"),
             Self::Addr => write!(f, "addr"),
             Self::Closure => write!(f, "closure"),
             Self::Pattern => write!(f, "pattern"),
-            Self::Union(types) => write!(f, "union[{}]", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
-            Self::Exclude(types) => write!(f, "exlude[{}]", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
+            Self::Union(types) => write!(f, "({})", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
+            Self::Exclude(types) => write!(f, "!({})", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
             Self::Type => write!(f, "type"),
         }
     }

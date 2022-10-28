@@ -1,0 +1,12 @@
+assert (= (not false) true);
+assert (= (not true) false);
+
+assert (and true true);
+assert (not (and false true));
+assert (not (and false false));
+assert (not (and true false));
+
+assert (or true true);
+assert (or false true);
+assert (or true false);
+assert (not (or false false));

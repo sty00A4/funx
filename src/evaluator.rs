@@ -178,10 +178,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             }
             let mut typ = Type::Any;
             if types.len() > 0 {
-                typ = types[0].clone();
-                if types.len() > 1 {
-                    typ = Type::Union(types);
-                }
+                typ = Type::Union(types);
             }
             Ok((V::Vector(values, typ), R::None))
         }

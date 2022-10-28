@@ -1,0 +1,5 @@
+var @a 10;
+inc! @a;
+assert (= a 11);
+dec! @a;
+assert (= a 10);
