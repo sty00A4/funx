@@ -12,14 +12,17 @@ pub struct Scope {
 impl Scope {
     pub fn new() -> Self { Self { vars: vec![], args: vec![] } }
     pub fn var(&mut self, word: &String, value: &V) -> Result<(), ()> {
-        for i in 0..self.args.len() {
-            if word == &i.to_string() { return Err(()) }
-        }
         for (var, _) in self.vars.iter() {
             if word == var { return Err(()) }
         }
         self.vars.push((word.clone(), value.clone()));
         Ok(())
+    }
+    pub fn set(&mut self, word: &String, value: &V) -> Result<(), ()> {
+        for (var, v) in self.vars.iter_mut() {
+            if word == var { *v = value.clone(); return Ok(()) }
+        }
+        Err(())
     }
     pub fn get(&self, word: &String) -> Option<&V> {
         for i in 0..self.args.len() {
@@ -64,6 +67,13 @@ impl Context {
         }
         Err(())
     }
+    pub fn set(&mut self, word: &String, value: &V) -> Result<(), ()> {
+        for scope in self.scopes.iter_mut().rev() {
+            let res = scope.set(word, value);
+            if res.is_ok() { return Ok(()) }
+        }
+        Err(())
+    }
     pub fn def(&mut self, word: &String, value: &V) -> Result<(), ()> {
         self.global.var(word, value)
     }
@@ -73,6 +83,9 @@ impl Context {
             if v.is_some() { return Some(v.unwrap()) }
         }
         self.global.get(word)
+    }
+    pub fn is_global(&self, word: &String) -> bool {
+        self.global.get(word).is_some()
     }
 }
 
@@ -98,6 +111,24 @@ pub fn _var(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Positi
         if res.is_err() {
             context.trace(pos);
             return Err(E::AlreadyDefined(word.clone()))
+        }
+        return Ok((V::Null, R::None))
+    }
+    context.trace(pos);
+    Err(E::ExpectedType { typ: Type::Addr, recv_typ: addr.typ() })
+}
+pub fn _set(args: Vec<V>, context: &mut Context, pos: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
+    let addr = &args[0];
+    let value = args.get(1).unwrap_or_else(|| &V::Null);
+    if let V::Addr(word) = addr {
+        if context.is_global(word) {
+            context.trace(pos);
+            return Err(E::Immutable(word.clone()))
+        }
+        let res = context.set(word, value);
+        if res.is_err() {
+            context.trace(pos);
+            return Err(E::NotDefined(word.clone()))
         }
         return Ok((V::Null, R::None))
     }
@@ -249,6 +280,8 @@ pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
     let _ = context.def(&"var".to_string(),
     &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _var));
+    let _ = context.def(&"set".to_string(),
+    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _set));
     let _ = context.def(&"def".to_string(),
     &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _def));
     let _ = context.def(&"get".to_string(),
