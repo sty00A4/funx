@@ -190,7 +190,7 @@ impl PartialEq for Type {
 #[derive(Clone)]
 pub enum V {
     Null, Wirldcard, Int(i64), Float(f64), Bool(bool), String(String), Vector(Vec<V>, Type),
-    Addr(String), Closure(Node), Pattern(Vec<Type>),
+    Addr(String), Closure(Node, String), Pattern(Vec<Type>),
     NativFunction(Box<V>, NativFunction), Function(Box<V>, Box<V>),
     Type(Type)
 }
@@ -205,7 +205,7 @@ impl V {
             Self::String(_) => Type::String,
             Self::Vector(_, typ) => Type::Vector(Box::new(typ.clone())),
             Self::Addr(_) => Type::Addr,
-            Self::Closure(_) => Type::Closure,
+            Self::Closure(_, _) => Type::Closure,
             Self::Pattern(_) => Type::Pattern,
             Self::NativFunction(_, _) => Type::NativFunction,
             Self::Function(_, _) => Type::Function,
@@ -323,7 +323,7 @@ impl std::fmt::Debug for V {
             Self::String(v) => write!(f, "{v}"),
             Self::Vector(v, _) => write!(f, "[{}]", v.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::Addr(v) => write!(f, "@{v}"),
-            Self::Closure(v) => write!(f, "#{v}"),
+            Self::Closure(v, _) => write!(f, "#{v}"),
             Self::Pattern(types) => write!(f, "<{}>", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")),
             Self::NativFunction(_, v) => write!(f, "nativ-function:{:?}", v as *const NativFunction),
             Self::Function(_, body) => write!(f, "function:{:?}", body as *const Box<V>),
@@ -345,7 +345,7 @@ impl PartialEq for V {
             (Self::String(v1), Self::String(v2)) => v1 == v2,
             (Self::Vector(v1, _), Self::Vector(v2, _)) => v1 == v2,
             (Self::Addr(v1), Self::Addr(v2)) => v1 == v2,
-            (Self::Closure(v1), Self::Closure(v2)) => v1 == v2,
+            (Self::Closure(v1, _), Self::Closure(v2, _)) => v1 == v2,
             (Self::Pattern(v1), Self::Pattern(v2)) => v1 == v2,
             (Self::Type(v1), Self::Type(v2)) => v1 == v2,
             _ => false

@@ -48,3 +48,6 @@ def @inc (function <number> #(+ %0 1));
 def @dec (function <number> #(- %0 1));
 def @inc! (function <addr> #(set %0 (inc (get %0))));
 def @dec! (function <addr> #(set %0 (dec (get %0))));
+
+$ control flow
+def @for (function <addr number closure closure closure> #{ var %0 %1; while %2 #{ %3; %4 }; })

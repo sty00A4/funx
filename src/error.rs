@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::fs;
 use crate::values::*;
 use crate::context::*;
@@ -30,7 +31,7 @@ impl E {
                 let lines: Vec<&str> = text.split("\n").collect();
                 string.push_str(format!("{}:{}:{} - {}:{}\n",
                 &context.path, pos.0.start + 1, pos.1.start + 1, pos.0.end + 1, pos.1.end + 1).as_str());
-                string.push_str(lines[pos.0.start..pos.0.end + 1].join("\n").as_str());
+                string.push_str(lines[min(pos.0.start, lines.len())..min(pos.0.end + 1, lines.len())].join("\n").as_str());
                 string.push_str("\n");
             } else {
                 string.push_str(text.as_str());

@@ -152,10 +152,20 @@ pub fn _if(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>
     let case = args.get(1).unwrap_or_else(|| &V::Null);
     let else_case = args.get(2).unwrap_or_else(|| &V::Null);
     if cond == &V::Bool(true) {
-        if let V::Closure(n) = case { return get(n, context) }
+        if let V::Closure(n, cpath) = case {
+            let path = context.path.clone();
+            context.path = cpath.clone();
+            let res = get(n, context);
+            context.path = path;
+        }
         return Ok((case.clone(), R::None))
     } else if else_case != &V::Null {
-        if let V::Closure(n) = else_case { return get(n, context) }
+        if let V::Closure(n, cpath) = else_case {
+            let path = context.path.clone();
+            context.path = cpath.clone();
+            let res = get(n, context);
+            context.path = path;
+        }
         return Ok((else_case.clone(), R::None))
     }
     return Ok((V::Null, R::None))
@@ -163,18 +173,27 @@ pub fn _if(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>
 pub fn _while(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     let mut cond = Type::Bool.cast(&args[0]);
     let case = args.get(1).unwrap_or_else(|| &V::Null);
-    if let V::Closure(n) = &args[0] {
+    if let V::Closure(n, cpath) = &args[0] {
+        let path = context.path.clone();
+        context.path = cpath.clone();
         let (value, _) = get(n, context)?;
+        context.path = path;
         cond = Type::Bool.cast(&value);
     }
     while cond == V::Bool(true) {
-        if let V::Closure(n) = case {
+        if let V::Closure(n, cpath) = case {
+            let path = context.path.clone();
+            context.path = cpath.clone();
             let (value, ret) = get(n, context)?;
+            context.path = path;
             if ret == R::Return { return Ok((value, ret)) }
             if ret == R::Break { return Ok((value, R::None)) }
         }
-        if let V::Closure(n) = &args[0] {
+        if let V::Closure(n, cpath) = &args[0] {
+            let path = context.path.clone();
+            context.path = cpath.clone();
             let (value, _) = get(n, context)?;
+            context.path = path;
             cond = Type::Bool.cast(&value);
         } else {
             cond = Type::Bool.cast(&args[0]);

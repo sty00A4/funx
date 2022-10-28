@@ -35,10 +35,13 @@ pub fn eval(head_value: V, head: &Node, args: Vec<V>, types: Vec<Type>, poses: V
             }
             return Ok((head_value, R::None))
         }
-        V::Closure(n) => {
+        V::Closure(n, closure_path) => {
             context.push();
             context.args(&args);
+            let path = context.path.clone();
+            context.path = closure_path;
             let value_ret = get(&n, context)?;
+            context.path = path;
             context.pop();
             return Ok(value_ret)
         }
@@ -123,7 +126,7 @@ pub fn get(node: &Node, context: &mut Context) -> Result<(V, R), E> {
             context.trace(&node.1);
             return Err(E::ExpectedType{ typ: Type::String, recv_typ: value.typ() })
         }
-        N::Closure(n) => Ok((V::Closure(n.as_ref().clone()), R::None)),
+        N::Closure(n) => Ok((V::Closure(n.as_ref().clone(), context.path.clone()), R::None)),
         N::Pattern(nodes) => {
             let mut types: Vec<Type> = vec![];
             for n in nodes {
