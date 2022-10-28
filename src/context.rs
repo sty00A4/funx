@@ -40,7 +40,7 @@ pub struct Context {
     pub trace: Vec<(Position, String)>
 }
 impl Context {
-    pub fn new(path: &String) -> Self { Self { path: path.clone(), scopes: vec![], global: Scope::new(), trace: vec![] } }
+    pub fn new(path: &String) -> Self { Self { path: path.clone(), scopes: vec![Scope::new()], global: Scope::new(), trace: vec![] } }
     pub fn push(&mut self) {
         self.scopes.push(Scope::new());
     }

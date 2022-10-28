@@ -1,1 +1,5 @@
-print (vec int float);
+var @v [1 2 3.5];
+var @t (vec int);
+print (type v);
+print t;
+print (= (type v) t);
