@@ -1,3 +1,2 @@
-print (type [1 2]);
-print (type [true 4]);
-print (= (type [1 2]) (type [true 4]))
+var @i 0;
+while #(not (= i 10)) #{ print i; inc! @i };

@@ -160,6 +160,28 @@ pub fn _if(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>
     }
     return Ok((V::Null, R::None))
 }
+pub fn _while(args: Vec<V>, context: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
+    let mut cond = Type::Bool.cast(&args[0]);
+    let case = args.get(1).unwrap_or_else(|| &V::Null);
+    if let V::Closure(n) = &args[0] {
+        let (value, _) = get(n, context)?;
+        cond = Type::Bool.cast(&value);
+    }
+    while cond == V::Bool(true) {
+        if let V::Closure(n) = case {
+            let (value, ret) = get(n, context)?;
+            if ret == R::Return { return Ok((value, ret)) }
+            if ret == R::Break { return Ok((value, R::None)) }
+        }
+        if let V::Closure(n) = &args[0] {
+            let (value, _) = get(n, context)?;
+            cond = Type::Bool.cast(&value);
+        } else {
+            cond = Type::Bool.cast(&args[0]);
+        }
+    }
+    return Ok((V::Null, R::None))
+}
 pub fn _print(args: Vec<V>, _: &mut Context, _: &Position, _: &Vec<&Position>) -> Result<(V, R), E> {
     for i in 0..args.len() {
         print!("{}", &args[i]);
@@ -299,6 +321,8 @@ pub fn funx_context(path: &String) -> Context {
 
     let _ = context.def(&"if".to_string(),
     &V::NativFunction(patt(vec![Type::Bool, Type::some(), Type::Any]), _if));
+    let _ = context.def(&"while".to_string(),
+    &V::NativFunction(patt(vec![Type::Union(vec![Type::Bool, Type::Closure]), Type::Closure]), _while));
 
     let _ = context.def(&"+".to_string(),
     &V::NativFunction(Box::new(V::Null), _add));
