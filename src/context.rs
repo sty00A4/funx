@@ -275,20 +275,30 @@ pub fn _load(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Pos
     context.trace(&poses[0]);
     Err(E::ExpectedType { typ: Type::String, recv_typ: args[0].typ() })
 }
+pub fn _assert(args: Vec<V>, context: &mut Context, pos: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args[0] == V::Bool(false) {
+        context.trace(&pos);
+        return Err(E::AssertError)
+    }
+    Ok((V::Null, R::None))
+}
+
+fn patt(pattern: Vec<Type>) -> Box<V> { Box::new(V::Pattern(pattern)) }
+fn npatt() -> Box<V> { Box::new(V::Null) }
 
 pub fn funx_context(path: &String) -> Context {
     let mut context = Context::new(path);
     let _ = context.def(&"var".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _var));
+    &V::NativFunction(patt(vec![Type::Addr, Type::Any]), _var));
     let _ = context.def(&"set".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _set));
+    &V::NativFunction(patt(vec![Type::Addr, Type::Any]), _set));
     let _ = context.def(&"def".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr, Type::Any])), _def));
+    &V::NativFunction(patt(vec![Type::Addr, Type::Any]), _def));
     let _ = context.def(&"get".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Addr])), _get));
+    &V::NativFunction(patt(vec![Type::Addr]), _get));
 
     let _ = context.def(&"if".to_string(),
-    &V::NativFunction(Box::new(V::Pattern(vec![Type::Bool, Type::some(), Type::Any])), _if));
+    &V::NativFunction(patt(vec![Type::Bool, Type::some(), Type::Any]), _if));
 
     let _ = context.def(&"+".to_string(),
     &V::NativFunction(Box::new(V::Null), _add));
@@ -311,6 +321,8 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(Box::new(V::Null), _print));
     let _ = context.def(&"load".to_string(),
     &V::NativFunction(Box::new(V::Null), _load));
+    let _ = context.def(&"assert".to_string(),
+    &V::NativFunction(Box::new(V::Null), _assert));
 
     context
 }

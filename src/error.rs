@@ -18,6 +18,7 @@ pub enum E {
     UnaryOperation(Type),
     PatternMissmatch { pattern1: V, pattern2: V },
     ExpectedLen { len: usize, recv_len: usize },
+    AssertError,
 }
 impl E {
     pub fn display(&self, context: &Context) -> String {
@@ -54,7 +55,8 @@ impl std::fmt::Display for E {
             Self::BinaryOperation{ type1, type2 } => write!(f, "ERROR: illegal operation between type {type1} and type {type2}"),
             Self::UnaryOperation(typ) => write!(f, "ERROR: illegal operation on type {typ}"),
             Self::PatternMissmatch { pattern1, pattern2 } => write!(f, "ERROR: pattern {pattern1} does not match {pattern2}"),
-            Self::ExpectedLen { len, recv_len } => write!(f, "ERROR: expected pattern to be at least of length {len} not {recv_len} "),
+            Self::ExpectedLen { len, recv_len } => write!(f, "ERROR: expected pattern to be at least of length {len} not {recv_len}"),
+            Self::AssertError => write!(f, "ERROR: assertion is false"),
         }
     }
 }
