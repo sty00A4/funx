@@ -40,6 +40,8 @@ $ logic
 def @not (function <bool> #(%0 false true));
 def @or (function <bool bool> #(%0 true %1));
 def @and (function <bool bool> #(%0 %1 false));
+def @le (function <number number> #(or (lt %0 %1) (= %0 %1)));
+def @ge (function <number number> #(or (gt %0 %1) (= %0 %1)));
 
 $ vars
 def @inc (function <number> #(+ %0 1));

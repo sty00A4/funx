@@ -72,4 +72,8 @@ mod tests {
     fn types() -> Result<(), E> {
         runfile_core(&"tests/types.funx".to_string())?; Ok(())
     }
+    #[test]
+    fn comp() -> Result<(), E> {
+        runfile_core(&"tests/comp.funx".to_string())?; Ok(())
+    }
 }

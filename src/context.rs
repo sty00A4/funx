@@ -257,7 +257,31 @@ pub fn _eq(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Posit
             if args[i] != args[j] { return Ok((V::Bool(false), R::None)) }
         }
     }
-    return Ok((V::Bool(true), R::None))
+    Ok((V::Bool(true), R::None))
+}
+pub fn _lt(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    for i in 0..args.len()-1 {
+        let v = args[i].lt(&args[i+1]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: args[i].typ(), type2: args[i+1].typ() })
+        }
+        if v.unwrap() == V::Bool(false) { return Ok((V::Bool(false), R::None)) }
+    }
+    Ok((V::Bool(true), R::None))
+}
+pub fn _gt(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
+    if args.len() == 0 { return Ok((V::Null, R::None)) }
+    for i in 0..args.len()-1 {
+        let v = args[i].gt(&args[i+1]);
+        if v.is_none() {
+            context.trace(poses[i]);
+            return Err(E::BinaryOperation { type1: args[i].typ(), type2: args[i+1].typ() })
+        }
+        if v.unwrap() == V::Bool(false) { return Ok((V::Bool(false), R::None)) }
+    }
+    Ok((V::Bool(true), R::None))
 }
 pub fn _union(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Type(Type::Union(vec![Type::Any])), R::None)) }
@@ -325,28 +349,32 @@ pub fn funx_context(path: &String) -> Context {
     &V::NativFunction(patt(vec![Type::Union(vec![Type::Bool, Type::Closure]), Type::Closure]), _while));
 
     let _ = context.def(&"+".to_string(),
-    &V::NativFunction(Box::new(V::Null), _add));
+    &V::NativFunction(npatt(), _add));
     let _ = context.def(&"-".to_string(),
-    &V::NativFunction(Box::new(V::Null), _sub));
+    &V::NativFunction(npatt(), _sub));
     let _ = context.def(&"*".to_string(),
-    &V::NativFunction(Box::new(V::Null), _mul));
+    &V::NativFunction(npatt(), _mul));
     let _ = context.def(&"/".to_string(),
-    &V::NativFunction(Box::new(V::Null), _div));
+    &V::NativFunction(npatt(), _div));
 
     let _ = context.def(&"=".to_string(),
-    &V::NativFunction(Box::new(V::Null), _eq));
+    &V::NativFunction(npatt(), _eq));
+    let _ = context.def(&"lt".to_string(),
+    &V::NativFunction(patt(vec![Type::number(), Type::number()]), _lt));
+    let _ = context.def(&"gt".to_string(),
+    &V::NativFunction(patt(vec![Type::number(), Type::number()]), _gt));
     
     let _ = context.def(&"union".to_string(),
-    &V::NativFunction(Box::new(V::Null), _union));
+    &V::NativFunction(npatt(), _union));
     let _ = context.def(&"exclude".to_string(),
-    &V::NativFunction(Box::new(V::Null), _exclude));
+    &V::NativFunction(npatt(), _exclude));
     
     let _ = context.def(&"print".to_string(),
-    &V::NativFunction(Box::new(V::Null), _print));
+    &V::NativFunction(npatt(), _print));
     let _ = context.def(&"load".to_string(),
-    &V::NativFunction(Box::new(V::Null), _load));
+    &V::NativFunction(npatt(), _load));
     let _ = context.def(&"assert".to_string(),
-    &V::NativFunction(Box::new(V::Null), _assert));
+    &V::NativFunction(npatt(), _assert));
 
     context
 }

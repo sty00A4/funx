@@ -14,6 +14,7 @@ pub enum Type {
 }
 impl Type {
     pub fn some() -> Self { Self::Exclude(vec![Type::Undefined]) }
+    pub fn number() -> Self { Self::Union(vec![Type::Int, Type::Float]) }
     pub fn cast(&self, value: &V) -> V {
         match self {
             Self::Undefined => V::Null,
@@ -270,6 +271,36 @@ impl V {
             Self::Float(v1) => match other {
                 Self::Float(v2) => Some(V::Float(v1 / v2)),
                 Self::Int(v2) => Some(V::Float(v1 / (*v2 as f64))),
+                _ => None
+            }
+            _ => None
+        }
+    }
+    pub fn lt(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Bool((*v1 as f64) < (*v2 as f64))),
+                Self::Float(v2) => Some(V::Bool((*v1 as f64) < *v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Bool(v1 < v2)),
+                Self::Int(v2) => Some(V::Bool(*v1 < (*v2 as f64))),
+                _ => None
+            }
+            _ => None
+        }
+    }
+    pub fn gt(&self, other: &V) -> Option<V> {
+        match self {
+            Self::Int(v1) => match other {
+                Self::Int(v2) => Some(V::Bool((*v1 as f64) > (*v2 as f64))),
+                Self::Float(v2) => Some(V::Bool((*v1 as f64) > *v2)),
+                _ => None
+            }
+            Self::Float(v1) => match other {
+                Self::Float(v2) => Some(V::Bool(v1 > v2)),
+                Self::Int(v2) => Some(V::Bool(*v1 > (*v2 as f64))),
                 _ => None
             }
             _ => None
