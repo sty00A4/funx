@@ -20,6 +20,8 @@ def @pattern? (union pattern undefined);
 def @type? (union type undefined);
 
 $ is type
+def @is-neg (function <number> #(lt %0 0));
+def @is-pos (function <number> #(ge %0 0));
 def @is-null (function <any> #(= (type %0) undefined));
 def @is-some (function <any> #(= (type %0) some));
 def @is-int (function <any> #(= (type %0) int));
