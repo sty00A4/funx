@@ -10,10 +10,10 @@ pub type NativFunction = fn(Vec<V>, &mut Context, &Position, &Vec<&Position>) ->
 pub enum Type {
     Undefined, Any, Int, Float, Bool, String, Vector(Box<Type>), NativFunction, Function,
     Addr, Closure, Pattern,
-    Union(Vec<Type>), Exclude(Vec<Type>), Type
+    Union(Vec<Type>), Exclusion(Vec<Type>), Type
 }
 impl Type {
-    pub fn some() -> Self { Self::Exclude(vec![Type::Undefined]) }
+    pub fn some() -> Self { Self::Exclusion(vec![Type::Undefined]) }
     pub fn number() -> Self { Self::Union(vec![Type::Int, Type::Float]) }
     pub fn cast(&self, value: &V) -> V {
         match self {
@@ -68,7 +68,7 @@ impl std::fmt::Debug for Type {
             Self::Closure => write!(f, "closure"),
             Self::Pattern => write!(f, "pattern"),
             Self::Union(types) => write!(f, "({})", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
-            Self::Exclude(types) => write!(f, "!({})", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
+            Self::Exclusion(types) => write!(f, "!({})", types.iter().map(|x| x.to_string()).collect::<Vec<String>>().join("|")),
             Self::Type => write!(f, "type"),
         }
     }
@@ -88,7 +88,7 @@ impl PartialEq for Type {
                 }
                 return true
             }
-            if let Self::Exclude(other_types) = other {
+            if let Self::Exclusion(other_types) = other {
                 for typ in types {
                     let mut found = false;
                     for other_typ in other_types {
@@ -100,8 +100,8 @@ impl PartialEq for Type {
             }
             return types.contains(other)
         }
-        if let Self::Exclude(types) = self {
-            if let Self::Exclude(other_types) = other {
+        if let Self::Exclusion(types) = self {
+            if let Self::Exclusion(other_types) = other {
                 for typ in types {
                     let mut found = false;
                     for other_typ in other_types {
@@ -134,7 +134,7 @@ impl PartialEq for Type {
                 }
                 return true
             }
-            if let Self::Exclude(other_types) = self {
+            if let Self::Exclusion(other_types) = self {
                 for typ in types {
                     let mut found = false;
                     for other_typ in other_types {
@@ -146,7 +146,7 @@ impl PartialEq for Type {
             }
             return types.contains(self)
         }
-        if let Self::Exclude(types) = other {
+        if let Self::Exclusion(types) = other {
             if let Self::Union(other_types) = self {
                 for typ in types {
                     let mut found = false;
@@ -157,7 +157,7 @@ impl PartialEq for Type {
                 }
                 return true
             }
-            if let Self::Exclude(other_types) = self {
+            if let Self::Exclusion(other_types) = self {
                 for typ in types {
                     let mut found = false;
                     for other_typ in other_types {

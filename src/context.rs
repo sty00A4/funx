@@ -326,7 +326,7 @@ pub fn _exclude(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&
             return Err(E::ExpectedType { typ: Type::Type, recv_typ: args[i].typ() })
         }
     }
-    return Ok((V::Type(Type::Exclude(types)), R::None))
+    return Ok((V::Type(Type::Exclusion(types)), R::None))
 }
 pub fn _load(args: Vec<V>, context: &mut Context, _: &Position, poses: &Vec<&Position>) -> Result<(V, R), E> {
     if args.len() == 0 { return Ok((V::Null, R::None)) }
